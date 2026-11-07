@@ -1,0 +1,21 @@
+{
+  "name": "pw-holdings-cheque-printer",
+  "version": "2.0.0",
+  "private": true,
+  "description": "PW Holdings - Modern Cheque and Voucher Printing System for Zoho Books",
+  "main": "server.js",
+  "scripts": {
+    "start": "node --env-file-if-exists=.env server.js",
+    "test": "node --test test/words.test.js"
+  },
+  "engines": {
+    "node": ">=20.x"
+  },
+  "keywords": [
+    "cheque-printer",
+    "zoho-books",
+    "pw-holdings",
+    "sri-lanka"
+  ]
+}
+

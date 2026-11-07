@@ -1,0 +1,2242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MEP Engineering &amp; Trading Company (Pvt) Ltd — Intelligent Cheque Writer &amp; Printer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #0f172a;
+      --panel-dark: #1e293b;
+      --panel-card: #334155;
+      --border-color: #475569;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --primary: #0284c7;
+      --primary-hover: #0369a1;
+      --accent: #10b981;
+      --accent-hover: #059669;
+      --amber: #f59e0b;
+      --red: #ef4444;
+      --radius: 12px;
+      --shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg-dark);
+      color: var(--text-main);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .num, .mono { font-family: 'Space Mono', monospace; }
+
+    /* File Protocol Warning Banner */
+    .file-warn-banner {
+      display: none;
+      background: #7f1d1d;
+      color: #fecaca;
+      padding: 12px 20px;
+      font-size: 13px;
+      border-bottom: 2px solid #ef4444;
+      text-align: center;
+    }
+    .file-warn-banner.show { display: block; }
+    .file-warn-banner strong { color: #fff; }
+    .file-warn-banner code { background: #450a0a; padding: 2px 6px; border-radius: 4px; color: #fef08a; font-family: monospace; }
+
+    /* Top Bar */
+    header.app-nav {
+      background: var(--panel-dark);
+      border-bottom: 1px solid var(--border-color);
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .brand-logo {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, #0284c7, #38bdf8);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 15px;
+      color: #fff;
+    }
+    .brand-title { font-size: 15px; font-weight: 700; }
+    .brand-sub { font-size: 11.5px; color: var(--text-muted); }
+
+    .nav-tabs {
+      display: flex;
+      gap: 6px;
+      background: var(--bg-dark);
+      padding: 4px;
+      border-radius: 10px;
+      border: 1px solid var(--border-color);
+    }
+    .nav-tabs button {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      padding: 6px 14px;
+      border-radius: 7px;
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .nav-tabs button:hover { color: var(--text-main); }
+    .nav-tabs button.active {
+      background: var(--panel-card);
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+
+    .auth-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 5px 12px;
+      border-radius: 20px;
+      background: var(--panel-card);
+      border: 1px solid var(--border-color);
+    }
+    .auth-badge.connected { border-color: var(--accent); color: #34d399; }
+    .auth-badge.disconnected { border-color: var(--red); color: #f87171; }
+    .auth-badge .dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+
+    /* App Container */
+    .container {
+      max-width: 1380px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    /* Views */
+    .app-view { display: none; }
+    .app-view.active { display: block; animation: fadeIn 0.2s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: none; } }
+
+    /* Controls Bar styled like desktop Cheque Writer */
+    .cheque-control-box {
+      background: #1e293b;
+      border: 1px solid #3b82f6;
+      border-radius: 14px;
+      padding: 16px 20px;
+      box-shadow: var(--shadow);
+      margin-bottom: 20px;
+    }
+    .cq-toolbar-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+    .cq-toolbar-row:last-child { margin-bottom: 0; }
+
+    .ctrl-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .ctrl-item label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-main);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+    .ctrl-item input[type="checkbox"] {
+      width: 17px;
+      height: 17px;
+      accent-color: #0284c7;
+      cursor: pointer;
+    }
+    .ctrl-item input[type="text"],
+    .ctrl-item input[type="date"],
+    .ctrl-item select {
+      background: #0f172a;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      color: #fff;
+      padding: 6px 10px;
+      font-size: 13px;
+      font-family: inherit;
+    }
+    .ctrl-item input:focus, .ctrl-item select:focus {
+      outline: 2px solid #0284c7;
+      border-color: #0284c7;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 8px 16px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-success { background: var(--accent); color: #022c22; font-size: 14px; padding: 10px 22px; }
+    .btn-success:hover { background: var(--accent-hover); color: #fff; }
+    .btn-ghost { background: var(--panel-card); color: var(--text-main); border: 1px solid var(--border-color); }
+    .btn-ghost:hover { background: #475569; }
+
+    /* Studio Layout */
+    .studio-grid {
+      display: grid;
+      grid-template-columns: 1fr 310px;
+      gap: 20px;
+      align-items: start;
+    }
+    @media (max-width: 1100px) {
+      .studio-grid { grid-template-columns: 1fr; }
+    }
+
+    /* Preview Canvas Area */
+    .preview-canvas-card {
+      background: #090d16;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      padding: 30px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 480px;
+      overflow-x: auto;
+      box-shadow: inset 0 2px 8px rgba(0,0,0,0.5);
+    }
+
+    /* =========================================================================
+       PRINTABLE CHEQUE WRAPPER (Cheque + Optional Counterfoil)
+       ========================================================================= */
+    .full-cheque-wrapper {
+      display: flex;
+      background: #ffffff;
+      color: #000000;
+      box-shadow: 0 12px 50px rgba(0, 0, 0, 0.7);
+      border-radius: 4px;
+      overflow: hidden;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      user-select: none;
+      position: relative;
+      transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1), height 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Counterfoil / Left Stub Paper */
+    .counterfoil-paper {
+      width: 2.75in;
+      height: 3.875in;
+      border-right: 1.5px dashed #64748b;
+      padding: 12px 14px;
+      font-size: 11px;
+      position: relative;
+      background: #f8fafc;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .cf-title { font-size: 11px; font-weight: 800; text-transform: uppercase; border-bottom: 1px solid #000; padding-bottom: 4px; margin-bottom: 8px; }
+    .cf-field { margin-bottom: 8px; }
+    .cf-label { font-size: 9.5px; font-weight: 700; color: #475569; text-transform: uppercase; }
+    .cf-val { font-size: 11.5px; font-weight: 700; font-family: 'Space Mono', monospace; border-bottom: 1px solid #94a3b8; min-height: 16px; padding: 1px 0; }
+
+    /* Main Cheque Paper (178mm x 89mm / 7in x 3.5in) */
+    .cheque-paper {
+      width: 178mm;
+      min-width: 178mm;
+      height: 89mm;
+      min-height: 89mm;
+      flex-shrink: 0;
+      position: relative;
+      background: #ffffff;
+      overflow: hidden;
+      transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Rotation Modes on Screen Preview */
+    .full-cheque-wrapper.rot-0 {
+      width: auto;
+      height: 89mm;
+      position: relative;
+    }
+    .full-cheque-wrapper.rot-0 .cheque-paper {
+      width: 178mm;
+      min-width: 178mm;
+      height: 89mm;
+      min-height: 89mm;
+      flex-shrink: 0;
+      position: relative;
+      transform: none;
+      transform-origin: 0 0;
+    }
+
+    /* 270°: Canon Rear Tray Clamped (89mm Narrow Edge — Photo 2) */
+    .full-cheque-wrapper.rot-270 {
+      width: 89mm !important;
+      height: 178mm !important;
+      position: relative !important;
+    }
+    .full-cheque-wrapper.rot-270 .cheque-paper {
+      position: absolute !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 178mm !important;
+      min-width: 178mm !important;
+      height: 89mm !important;
+      min-height: 89mm !important;
+      flex-shrink: 0 !important;
+      transform-origin: 0 0 !important;
+      transform: rotate(-90deg) translate(-178mm, 0) !important;
+    }
+    .full-cheque-wrapper.rot-270 .counterfoil-paper {
+      display: none !important;
+    }
+
+    /* 90°: Vertical (90° Clockwise — Logo first) */
+    .full-cheque-wrapper.rot-90 {
+      width: 89mm !important;
+      height: 178mm !important;
+      position: relative !important;
+    }
+    .full-cheque-wrapper.rot-90 .cheque-paper {
+      position: absolute !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 178mm !important;
+      min-width: 178mm !important;
+      height: 89mm !important;
+      min-height: 89mm !important;
+      flex-shrink: 0 !important;
+      transform-origin: 0 0 !important;
+      transform: rotate(90deg) translate(0, -89mm) !important;
+    }
+    .full-cheque-wrapper.rot-90 .counterfoil-paper {
+      display: none !important;
+    }
+
+    /* 180°: Inverted Horizontal */
+    .full-cheque-wrapper.rot-180 {
+      width: 178mm !important;
+      height: 89mm !important;
+      position: relative !important;
+    }
+    .full-cheque-wrapper.rot-180 .cheque-paper {
+      position: absolute !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 178mm !important;
+      min-width: 178mm !important;
+      height: 89mm !important;
+      min-height: 89mm !important;
+      flex-shrink: 0 !important;
+      transform-origin: 89mm 44.5mm !important;
+      transform: rotate(180deg) !important;
+    }
+
+    /* Cheque Floating Elements with exact mm placements */
+    .cq-date-box {
+      position: absolute;
+      top: 5.0mm;
+      left: 132mm;
+      display: flex;
+      align-items: center;
+      gap: 0.8mm;
+      font-family: 'Space Mono', monospace;
+      font-weight: 500;
+      white-space: nowrap;
+      line-height: 1;
+      color: #000000;
+      z-index: 10;
+    }
+    .cq-date-box .d-cell {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 4.8mm;
+      text-align: center;
+      font-size: 13.5px;
+      line-height: 1;
+      font-weight: 500;
+    }
+    .cq-date-box.skip-20 .d-century {
+      visibility: hidden !important;
+    }
+    .cq-date-box.compact-6 .d-century {
+      display: none !important;
+    }
+    .cq-payee {
+      position: absolute;
+      top: 20mm;
+      left: 22mm;
+      font-size: 13.5px;
+      font-weight: 500;
+      text-transform: none; /* Allows Sentence Case / Title Case */
+      white-space: nowrap;
+      color: #000;
+    }
+    .cq-words {
+      position: absolute;
+      top: 31mm;
+      left: 22mm;
+      width: 90mm;
+      font-size: 13.5px;
+      font-weight: 500;
+      line-height: 1.45;
+      color: #000;
+    }
+    .cq-amount-num {
+      position: absolute;
+      top: 36mm;
+      right: 36mm;
+      font-size: 13.5px;
+      font-weight: 500;
+      font-family: 'Space Mono', monospace;
+      white-space: nowrap;
+      color: #000;
+    }
+
+    /* Optional Bold Mode (Toggleable via Extra Options) */
+    .cheque-paper.bold-mode .cq-payee,
+    .cheque-paper.bold-mode .cq-words,
+    .cheque-paper.bold-mode .cq-amount-num,
+    .cheque-paper.bold-mode .cq-date-box .d-cell {
+      font-weight: 700 !important;
+    }
+
+    /* Crossing Graphics (Horizontal & Diagonal Parallel Lines) */
+    .cq-crossing-box {
+      position: absolute;
+      top: 4mm;
+      left: 6mm;
+      width: 45mm;
+      height: 7.5mm;
+      pointer-events: none;
+      border-top: 1.5px solid #000;
+      border-bottom: 1.5px solid #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+    .cq-crossing-box.cross-horizontal {
+      transform: none !important;
+      height: 7.5mm;
+    }
+    .cq-crossing-box.cross-diagonal {
+      width: 32mm;
+      height: 18mm;
+      transform: rotate(-35deg);
+    }
+    .cq-crossing-text {
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: none;
+      line-height: 1.1;
+      padding: 0 4px;
+      color: #000;
+      white-space: nowrap;
+    }
+
+    /* A/C Payee Top Center banner */
+    .cq-ac-center {
+      position: absolute;
+      top: 12mm;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    /* Or Bearer Strikethrough */
+    .cq-bearer-strike {
+      position: absolute;
+      top: 20mm;
+      right: 28mm;
+      font-size: 14px;
+      font-weight: bold;
+      color: #000;
+    }
+
+    .cq-company {
+      position: absolute;
+      bottom: 40mm;
+      right: 40mm;
+      font-size: 13px;
+      font-weight: 700;
+      text-align: right;
+      white-space: nowrap;
+    }
+    .cq-signatures {
+      position: absolute;
+      bottom: 25mm;
+      right: 8mm;
+      display: flex;
+      gap: 8mm;
+      align-items: flex-end;
+    }
+    .cq-sig-block {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+    .cq-sig-line {
+      width: 35mm;
+      border-bottom: 1px solid #000;
+      margin-bottom: 2px;
+    }
+    .cq-sig-label { font-size: 9.5px; font-weight: 600; }
+
+    /* Cheque Watermark Guide */
+    .cheque-paper.show-guide {
+      background-image: repeating-linear-gradient(0deg, transparent, transparent 19px, #e2e8f0 20px);
+    }
+
+    /* Calibration Sliders sidebar */
+    .calib-card {
+      background: var(--panel-dark);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      padding: 16px;
+    }
+    .calib-group {
+      background: var(--panel-card);
+      border-radius: 8px;
+      padding: 10px 12px;
+      margin-bottom: 10px;
+    }
+    .calib-header { display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; margin-bottom: 6px; }
+    .calib-row { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; font-size: 11px; }
+    .calib-row input[type="range"] { flex: 1; accent-color: #0284c7; }
+    .calib-row .val { width: 38px; text-align: right; font-family: monospace; }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #1e293b;
+      color: #fff;
+      border: 1px solid #3b82f6;
+      padding: 12px 20px;
+      border-radius: 10px;
+      font-size: 13.5px;
+      font-weight: 600;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      z-index: 1000;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all 0.25s;
+      pointer-events: none;
+    }
+    .toast.show { opacity: 1; transform: none; }
+
+    :root {
+      --master-top: 0mm;
+      --master-left: 111.0mm;
+    }
+
+    /* =========================================================================
+       PRINT RULES (ZERO MARGIN DUAL-FEED PRINT ENGINE)
+       ========================================================================= */
+    @media print {
+      body, html {
+        background: transparent !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        overflow: visible !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      .file-warn-banner, header.app-nav, .cheque-control-box, .calib-card, .no-print, .toast {
+        display: none !important;
+      }
+      .container {
+        max-width: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        width: 100% !important;
+      }
+      .studio-grid {
+        display: block !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+      .preview-canvas-card {
+        background: none !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        min-height: auto !important;
+        display: block !important;
+      }
+
+      .full-cheque-wrapper {
+        box-shadow: none !important;
+        border: none !important;
+        border-radius: 0 !important;
+        background: transparent !important;
+        page-break-inside: avoid !important;
+        page-break-after: avoid !important;
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: visible !important;
+      }
+
+      .cheque-paper {
+        box-shadow: none !important;
+        border: none !important;
+        background: transparent !important;
+        overflow: visible !important;
+      }
+      .cheque-paper.show-guide {
+        background-image: none !important;
+      }
+
+      /* Cheque without counterfoil */
+      body.mode-cheque-single .counterfoil-paper {
+        display: none !important;
+      }
+
+      /* 0° Horizontal (178mm Wide Edge — Photo 1) */
+      body.feed-rot-0 .cheque-paper,
+      body.feed-horizontal .cheque-paper {
+        width: 178mm !important;
+        height: 89mm !important;
+        position: relative !important;
+        margin-top: var(--master-top, 0mm) !important;
+        margin-left: var(--master-left, 111.0mm) !important;
+        transform: none !important;
+      }
+
+      /* 270° Canon Clamped Tray (89mm Narrow Edge — Photo 2) */
+      body.feed-rot-270 .cheque-paper,
+      body.feed-vert-canon .cheque-paper {
+        width: 178mm !important;
+        height: 89mm !important;
+        position: absolute !important;
+        transform-origin: 0 0 !important;
+        transform: rotate(-90deg) translate(-178mm, 0) !important;
+        top: var(--master-top, 0mm) !important;
+        left: var(--master-left, 111.0mm) !important;
+        overflow: visible !important;
+      }
+
+      /* 90° Vertical (Logo First) */
+      body.feed-rot-90 .cheque-paper {
+        width: 178mm !important;
+        height: 89mm !important;
+        position: absolute !important;
+        transform-origin: 0 0 !important;
+        transform: rotate(90deg) translate(0, -89mm) !important;
+        top: var(--master-top, 0mm) !important;
+        left: var(--master-left, 111.0mm) !important;
+        overflow: visible !important;
+      }
+
+      /* 180° Inverted */
+      body.feed-rot-180 .cheque-paper {
+        width: 178mm !important;
+        height: 89mm !important;
+        position: relative !important;
+        margin-top: var(--master-top, 0mm) !important;
+        margin-left: var(--master-left, 111.0mm) !important;
+        transform-origin: 89mm 44.5mm !important;
+        transform: rotate(180deg) !important;
+      }
+    }
+  </style>
+  <style id="printPageStyle">
+    @page {
+      size: portrait;
+      margin: 0mm !important;
+    }
+  </style>
+</head>
+<body class="mode-cheque-single feed-vert-canon">
+
+  <!-- Warning when user double clicks index.html directly from file system -->
+  <div class="file-warn-banner" id="fileWarnBanner">
+    ⚠️ <strong>Local Server Not Running:</strong> You opened this directly as a <code>file:///</code> file. Netlify functions cannot execute under <code>file:///</code>.
+    <br>👉 Please double-click <strong><code>start.bat</code></strong> inside <code>C:\Users\Asus\Downloads\pw-cheque-printer</code> to start the local server (<strong>http://localhost:8888</strong>), or deploy to Netlify.
+  </div>
+
+  <header class="app-nav no-print">
+    <div class="brand-group">
+      <div class="brand-logo">MEP</div>
+      <div>
+        <div class="brand-title">MEP Engineering &amp; Trading Company (Pvt) Ltd</div>
+        <div class="brand-sub" id="headerBrandSub">Auto-fill &amp; 1-Click Print Engine (Org: 940082326)</div>
+      </div>
+    </div>
+
+    <!-- Organization Switcher in Top Navigation -->
+    <div class="header-org-selector" style="display:flex; align-items:center; gap:8px; background:#0f172a; border:1px solid #38bdf8; padding:4px 12px; border-radius:10px;">
+      <span style="font-size:12px; font-weight:800; color:#38bdf8; text-transform:uppercase; letter-spacing:0.5px; white-space:nowrap;">🏢 Organization:</span>
+      <select id="topOrgSelect" onchange="onOrganizationChange(this.value)" style="background:#1e293b; color:#fff; font-size:12.5px; font-weight:700; border:1px solid #475569; padding:5px 10px; border-radius:6px; cursor:pointer; min-width:280px;">
+        <option value="940082326" data-name="MEP Engineering &amp; Trading Company (Pvt) Ltd" selected>MEP Engineering &amp; Trading Company (Pvt) Ltd (940082326)</option>
+      </select>
+    </div>
+
+    <nav class="nav-tabs">
+      <button class="active" onclick="switchView('cheque')">🏦 Cheque Writer</button>
+      <button onclick="switchView('lookup')">🔍 Recent Payments</button>
+      <button onclick="switchView('settings')">⚙️ Settings</button>
+    </nav>
+
+    <div class="auth-badge checking" id="navAuthBadge" onclick="startOAuth()" style="cursor:pointer;" title="Click to Connect or Verify Zoho Books">
+      <span class="dot"></span>
+      <span id="navAuthText">Checking Zoho...</span>
+    </div>
+  </header>
+
+  <div class="container">
+
+    <!-- =======================================================================
+         CHEQUE WRITER VIEW
+         ======================================================================= -->
+    <div class="app-view active" id="view-cheque">
+
+      <!-- Interactive Cheque Control Toolbar -->
+      <div class="cheque-control-box no-print">
+        
+        <!-- Row 1: Organization, Quick Payment Selector, Bank -->
+        <div class="cq-toolbar-row" style="flex-wrap:wrap; gap:10px;">
+          <div class="ctrl-item" style="background:#1e293b; border:1.5px solid #38bdf8; padding:4px 10px; border-radius:8px; box-shadow:0 0 10px rgba(56,189,248,0.15);">
+            <label style="color:#38bdf8; font-weight:800; font-size:13px;">🏢 Branch / Org:</label>
+            <select id="toolbarOrgSelect" onchange="onOrganizationChange(this.value)" style="min-width:270px; background:#0f172a; color:#fff; font-weight:700; border:1px solid #334155; padding:5px 8px; border-radius:6px; cursor:pointer;">
+              <option value="940082326" data-name="MEP Engineering &amp; Trading Company (Pvt) Ltd" selected>MEP Engineering &amp; Trading Company (Pvt) Ltd (940082326)</option>
+            </select>
+          </div>
+
+          <div class="ctrl-item" style="background:#1e293b; border:1px solid #0284c7; padding:4px 10px; border-radius:8px;">
+            <label style="color:#38bdf8; font-weight:700;">⚡ Zoho Payment:</label>
+            <select id="quickPaymentSelect" onchange="if(this.value) selectPayment(this.value)" style="min-width:240px; background:#0f172a; color:#fff; border:1px solid #334155;">
+              <option value="">Loading Zoho payments...</option>
+            </select>
+            <button class="btn btn-secondary btn-sm" onclick="loadQuickPayments(true)" title="Refresh Payments">🔄</button>
+          </div>
+
+          <div class="ctrl-item">
+            <label>🏦 Bank:</label>
+            <select id="bankPreset" onchange="applyBankPreset(this.value)" style="min-width:170px;">
+              <option value="commercial" selected>Commercial Bank</option>
+              <option value="ntb">Nations Trust Bank (NTB)</option>
+              <option value="sampath">Sampath Bank</option>
+              <option value="hnb">Hatton National Bank (HNB)</option>
+              <option value="boc">Bank of Ceylon (BOC)</option>
+              <option value="seylan">Seylan Bank</option>
+              <option value="custom">Custom Alignment</option>
+            </select>
+          </div>
+
+          <div class="ctrl-item">
+            <label><input type="checkbox" id="chkDate" checked onchange="updateLiveCheque()"> Date:</label>
+            <input type="date" id="cqDateInput" onchange="onDateChange()">
+            <select id="cqDateFormat" onchange="updateLiveCheque()" style="font-size:12px; padding:4px 6px; font-weight:600; background:#0f172a; color:#38bdf8; border:1px solid #334155; border-radius:6px;">
+              <option value="skip_20" selected>DD MM [20] YY (Leave Space for Pre-printed 20)</option>
+              <option value="full_8">DD MM YYYY (Print All 8 Digits)</option>
+              <option value="compact_6">DD MM YY (6 Digits Compact)</option>
+            </select>
+          </div>
+
+          <div class="ctrl-item" style="background:rgba(56, 189, 248, 0.08); border:1px solid #38bdf8; padding:3px 8px; border-radius:8px; display:flex; align-items:center; gap:6px;">
+            <button type="button" class="btn btn-primary btn-sm" id="btnRotate" onclick="cycleChequeRotation()" style="font-weight:700; padding:5px 12px; display:flex; align-items:center; gap:6px; cursor:pointer;" title="Click to cycle cheque orientation (0° ↔ 270° Canon Tray ↔ 90° ↔ 180°)">
+              <span style="font-size:14px;">🔄</span> <span id="btnRotateLabel">Rotate (270° Canon Tray)</span>
+            </button>
+            <select id="cqRotSelect" onchange="setChequeRotation(this.value)" style="font-weight:700; background:#0f172a; color:#38bdf8; border:1px solid #334155; border-radius:6px; padding:5px 8px; cursor:pointer;" title="Cheque Print & Preview Orientation">
+              <option value="270" selected>270° — Canon Tray (89mm Narrow Edge — Photo 2)</option>
+              <option value="0">0° — Horizontal (Wide Edge — Photo 1)</option>
+              <option value="90">90° — Vertical (Logo First)</option>
+              <option value="180">180° — Inverted Horizontal</option>
+            </select>
+          </div>
+
+          <div class="ctrl-item">
+            <label>Crossing Mode:</label>
+            <select id="cqCrossingSelect" onchange="updateLiveCheque()" style="min-width:240px; font-weight:600; background:#0f172a; color:#38bdf8; border:1px solid #334155; border-radius:6px;">
+              <option value="cross_h_ac_payee" selected>Horizontal (═ AC payee only ═)</option>
+              <option value="cross_h_ac_payee_title">Horizontal (═ A/C Payee Only ═)</option>
+              <option value="cross_h_ac_payee_upper">Horizontal (═ A/C PAYEE ONLY ═)</option>
+              <option value="cross_h_not_negotiable">Horizontal (═ A/C Payee + Not Negotiable ═)</option>
+              <option value="cross_h_only">Horizontal (═ ═ Double Lines Only)</option>
+              <option value="cross_diag_ac_payee">Diagonal (// Top-Left A/C PAYEE ONLY)</option>
+              <option value="cross_diag_not_negotiable">Diagonal (// Top-Left + Not Negotiable)</option>
+              <option value="cross_diag_only">Diagonal (// Top-Left Lines Only)</option>
+              <option value="center_ac_payee">Center Banner (A/C PAYEE ONLY)</option>
+              <option value="no_crossing">No Crossing (Bearer Cheque)</option>
+            </select>
+          </div>
+
+          <div style="margin-left:auto; display:flex; gap:10px;">
+            <button class="btn btn-success" onclick="window.print()">🖨️ PRINT CHEQUE (Ctrl+P)</button>
+          </div>
+        </div>
+
+        <!-- Row 2: Payee, Amount (Numeric), Wording -->
+        <div class="cq-toolbar-row" style="flex-wrap:wrap; gap:10px;">
+          <div class="ctrl-item" style="flex:1; min-width:260px;">
+            <label><input type="checkbox" id="chkPayee" checked onchange="updateLiveCheque()"> Payee:</label>
+            <input type="text" id="cqPayeeInput" value="N.G.L Hashan" placeholder="Payee name" oninput="updateLiveCheque()" style="width:100%;">
+            <select id="cqPayeeCase" onchange="updateLiveCheque()" style="font-size:11.5px; padding:4px 6px; font-weight:600; background:#0f172a; color:#38bdf8; border:1px solid #334155; border-radius:6px;" title="Text Case">
+              <option value="as_is" selected>As Typed / Original (N.G.L Hashan)</option>
+              <option value="title">Title Case (N.G.L Hashan / Chill Air)</option>
+              <option value="sentence">Sentence Case (Chill air...)</option>
+              <option value="upper">UPPERCASE (ALL CAPS)</option>
+            </select>
+          </div>
+
+          <div class="ctrl-item">
+            <label><input type="checkbox" id="chkAmount" checked onchange="updateLiveCheque()"> Amount (Rs):</label>
+            <input type="number" step="0.01" id="cqAmountInput" value="135000.00" oninput="onAmountChange()" style="width:140px; font-weight:700;">
+          </div>
+
+          <div class="ctrl-item" style="flex:1.4; min-width:320px;">
+            <label><input type="checkbox" id="chkWords" checked onchange="updateLiveCheque()"> Words:</label>
+            <input type="text" id="cqWordsInput" value="One Hundred And Thirty Five Thousand And Cents Zero Only" oninput="updateLiveCheque()" style="width:100%; font-weight:600;">
+            <select id="cqWordsCase" onchange="updateLiveCheque()" style="font-size:11.5px; padding:4px 6px; font-weight:600; background:#0f172a; color:#38bdf8; border:1px solid #334155; border-radius:6px;" title="Words Case">
+              <option value="title" selected>Title Case (One Hundred And...)</option>
+              <option value="sentence">Sentence Case (One hundred and...)</option>
+              <option value="upper">UPPERCASE (ONE HUNDRED...)</option>
+              <option value="as_is">As Typed / Original</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Row 3: Optional Toggles (Counterfoil / Stub, Signatures, Company, Bearer) -->
+        <div class="cq-toolbar-row" style="background:#0f172a; padding:8px 12px; border-radius:8px; border:1px solid #334155; flex-wrap:wrap; gap:12px;">
+          <span style="font-size:11.5px; font-weight:700; color:#38bdf8; text-transform:uppercase; margin-right:4px;">Extra Options:</span>
+          
+          <div class="ctrl-item">
+            <label><input type="checkbox" id="chkBold" onchange="updateLiveCheque()"> 🔤 Bold Font</label>
+          </div>
+
+          <div class="ctrl-item">
+            <label><input type="checkbox" id="chkCounterfoil" onchange="toggleCounterfoil()"> 📋 Counterfoil / Stub (Left)</label>
+          </div>
+
+          <div class="ctrl-item">
+            <label><input type="checkbox" id="chkCompany" onchange="updateLiveCheque()"> 🏢 Company Label</label>
+            <input type="text" id="cqCompanyInput" value="MEP Engineering & Trading Company (Pvt) Ltd" oninput="updateLiveCheque()" style="width:230px; padding:3px 6px; font-size:12px; font-weight:700;">
+          </div>
+
+          <div class="ctrl-item">
+            <label><input type="checkbox" id="chkSignatures" onchange="updateLiveCheque()"> ✍️ Signatures</label>
+            <select id="cqSigCount" onchange="updateLiveCheque()" style="padding:3px 6px; font-size:12px;">
+              <option value="2">2 Signatories</option>
+              <option value="1">1 Signatory</option>
+            </select>
+          </div>
+
+          <div class="ctrl-item">
+            <label><input type="checkbox" id="chkStrikeBearer" onchange="updateLiveCheque()"> Strike "Or Bearer"</label>
+          </div>
+
+          <div class="ctrl-item">
+            <label><input type="checkbox" id="chkGuide" onchange="toggleGuide()"> 📏 Guide Grid</label>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Studio Grid: Canvas Preview + Millimeter Calibration -->
+      <div class="studio-grid">
+
+        <!-- Cheque Canvas Area -->
+        <div class="preview-canvas-card">
+          <!-- Canvas Top Quick Action Bar -->
+          <div class="no-print" style="width:100%; max-width:760px; display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; padding:0 4px;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span style="font-size:12px; font-weight:800; color:#94a3b8; text-transform:uppercase; letter-spacing:0.5px;">👁️ Cheque Preview</span>
+              <span id="badgeRotation" style="background:#1e293b; color:#38bdf8; border:1px solid rgba(56,189,248,0.3); padding:2px 10px; border-radius:12px; font-size:11px; font-weight:700;">↔️ 0° Horizontal</span>
+            </div>
+            <div style="display:flex; gap:6px; align-items:center;">
+              <button type="button" class="btn btn-outline btn-sm" onclick="cycleChequeRotation()" style="font-size:11.5px; padding:4px 10px; font-weight:700; border-color:#38bdf8; color:#38bdf8; cursor:pointer;" title="Click to rotate cheque orientation">
+                🔄 Rotate 90°
+              </button>
+              <button type="button" class="btn btn-outline btn-sm" onclick="setChequeRotation(currentRotation === 270 ? 0 : 270)" style="font-size:11.5px; padding:4px 10px; font-weight:700; cursor:pointer;" title="Toggle between Horizontal (Photo 1) and Canon Tray (Photo 2)">
+                ⚡ Toggle Canon Tray
+              </button>
+            </div>
+          </div>
+
+          <!-- Guidance banner for feed orientation -->
+          <div id="feedGuidanceBanner" class="no-print" style="width:100%; max-width:760px; background:#0f172a; border:1px dashed #38bdf8; border-radius:8px; padding:7px 14px; margin-bottom:12px; font-size:12px; color:#e2e8f0; display:flex; align-items:center; gap:10px;">
+            <span style="font-size:18px;">📥</span>
+            <span id="feedGuidanceText"><strong>Canon Rear Tray (270°):</strong> Tray-aligned (Left: 79mm). Insert <strong>DATE EDGE FIRST</strong> into printer tray.</span>
+          </div>
+
+          <div class="full-cheque-wrapper rot-270" id="fullChequeWrapper">
+
+            <!-- Optional Counterfoil / Cheque Book Stub (Left Part) -->
+            <div class="counterfoil-paper" id="counterfoilPaper" style="display:none;">
+              <div class="cf-title">Cheque Counterfoil</div>
+              <div>
+                <div class="cf-field">
+                  <div class="cf-label">Date:</div>
+                  <div class="cf-val" id="cfDate">20/07/2026</div>
+                </div>
+                <div class="cf-field">
+                  <div class="cf-label">Cheque / Voucher #:</div>
+                  <div class="cf-val" id="cfDocNum">26072011</div>
+                </div>
+                <div class="cf-field">
+                  <div class="cf-label">To (Payee):</div>
+                  <div class="cf-val" id="cfPayee">AP Holdings</div>
+                </div>
+                <div class="cf-field">
+                  <div class="cf-label">Amount (Rs):</div>
+                  <div class="cf-val" id="cfAmt">18.00</div>
+                </div>
+              </div>
+              <div style="font-size:9px; color:#64748b; text-align:center; font-weight:bold;">MEP ENGINEERING &amp; TRADING COMPANY (PVT) LTD</div>
+            </div>
+
+            <!-- Main Cheque Paper Area (7.5" x 3.875") -->
+            <div class="cheque-paper" id="chequePaper">
+              
+              <!-- Date Box (8 Precise Digit Slots) -->
+              <div class="cq-date-box skip-20" id="cqDateBox">
+                <span class="d-cell" id="d1">0</span>
+                <span class="d-cell" id="d2">1</span>
+                <span class="d-cell" id="m1">0</span>
+                <span class="d-cell" id="m2">9</span>
+                <span class="d-cell d-century" id="y1">2</span>
+                <span class="d-cell d-century" id="y2">0</span>
+                <span class="d-cell" id="y3">2</span>
+                <span class="d-cell" id="y4">6</span>
+              </div>
+
+              <!-- Crossing Graphics -->
+              <div class="cq-crossing-box cross-lines" id="cqCrossingLines">
+                <div class="cq-crossing-text" id="cqCrossingLineText">A/C PAYEE ONLY</div>
+              </div>
+              <div class="cq-ac-center" id="cqAcCenter" style="display:none;">A/C PAYEE ONLY</div>
+
+              <!-- Payee Name -->
+              <div class="cq-payee" id="cqPayee"><b>AP Holdings</b></div>
+
+              <!-- Strike Or Bearer -->
+              <div class="cq-bearer-strike" id="cqBearerStrike"><s>OR BEARER</s></div>
+
+              <!-- Amount in Words -->
+              <div class="cq-words" id="cqWords"><b>Eighteen and Cents Zero Only</b></div>
+
+              <!-- Numeric Amount -->
+              <div class="cq-amount-num" id="cqAmountNum"><b>18.00</b></div>
+
+              <!-- Company Label -->
+              <div class="cq-company" id="cqCompany">MEP ENGINEERING &amp; TRADING COMPANY (PVT) LTD</div>
+
+              <!-- Signatures -->
+              <div class="cq-signatures" id="cqSignatures">
+                <div class="cq-sig-block" id="sigBlock1">
+                  <div class="cq-sig-line"></div>
+                  <div class="cq-sig-label">Authorised Signatory</div>
+                </div>
+                <div class="cq-sig-block" id="sigBlock2">
+                  <div class="cq-sig-line"></div>
+                  <div class="cq-sig-label">Authorised Signatory</div>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Calibration Controls Sidebar -->
+        <div class="calib-card no-print">
+          <h3 style="font-size:14px; margin:0 0 12px; display:flex; justify-content:space-between;">
+            <span>📐 Fine Alignment (mm)</span>
+            <button class="btn btn-ghost btn-sm" onclick="resetCalibration()">Reset</button>
+          </h3>
+
+          <!-- Master Page Offset -->
+          <div class="calib-group" style="background:#0f2b48; border:1px solid #0284c7; margin-bottom:12px;">
+            <div class="calib-header" style="color:#38bdf8;">
+              <span>🎯 Whole Cheque Shift</span>
+              <span id="valMaster">Top: 0mm, Left: 111.0mm</span>
+            </div>
+            <div class="calib-row">
+              <span style="width:36px;">Top:</span>
+              <input type="range" id="calMasterTop" min="0" max="200" step="0.5" value="0" oninput="updateCalib()">
+              <span class="val" id="valMasterTop" style="width:40px; font-size:11px;">0mm</span>
+            </div>
+            <div class="calib-row">
+              <span style="width:36px;">Left:</span>
+              <input type="range" id="calMasterLeft" min="0" max="180" step="0.5" value="111.0" oninput="updateCalib()">
+              <span class="val" id="valMasterLeft" style="width:40px; font-size:11px;">111.0mm</span>
+            </div>
+            <div style="display:flex; gap:4px; margin-top:6px;">
+              <button class="btn btn-ghost btn-sm" style="flex:1; font-size:10px; padding:3px 2px;" onclick="setMasterOffset(0, 111.0)">Commercial (111mm)</button>
+              <button class="btn btn-ghost btn-sm" style="flex:1; font-size:10px; padding:3px 2px;" onclick="setMasterOffset(0, 86.0)">Commercial (86mm)</button>
+              <button class="btn btn-ghost btn-sm" style="flex:1; font-size:10px; padding:3px 2px;" onclick="setMasterOffset(0, 60.5)">Canon Center (60.5mm)</button>
+              <button class="btn btn-ghost btn-sm" style="flex:1; font-size:10px; padding:3px 2px;" onclick="setMasterOffset(0, 0)">Left Edge (0mm)</button>
+            </div>
+            <div style="display:flex; gap:4px; margin-top:6px;">
+              <button class="btn btn-secondary btn-sm" style="flex:1; font-size:10.5px; padding:2px 2px;" onclick="nudgeMaster(-1, 0)">▲ Top -1mm</button>
+              <button class="btn btn-secondary btn-sm" style="flex:1; font-size:10.5px; padding:2px 2px;" onclick="nudgeMaster(1, 0)">▼ Top +1mm</button>
+              <button class="btn btn-secondary btn-sm" style="flex:1; font-size:10.5px; padding:2px 2px;" onclick="nudgeMaster(0, -1)">◄ Left -1mm</button>
+              <button class="btn btn-secondary btn-sm" style="flex:1; font-size:10.5px; padding:2px 2px;" onclick="nudgeMaster(0, 1)">► Left +1mm</button>
+            </div>
+          </div>
+
+          <!-- Date Alignment -->
+          <div class="calib-group">
+            <div class="calib-header"><span>Date Box Position &amp; Grid</span><span id="valDate">5, 132</span></div>
+            <div class="calib-row">
+              <span style="width:70px;">Top:</span>
+              <input type="range" id="calDateTop" min="0" max="30" step="0.5" value="5" oninput="updateCalib()">
+            </div>
+            <div class="calib-row">
+              <span style="width:70px;">Left:</span>
+              <input type="range" id="calDateLeft" min="80" max="170" step="0.5" value="132" oninput="updateCalib()">
+            </div>
+            <div class="calib-row">
+              <span style="width:70px;">Digit Gap:</span>
+              <input type="range" id="calDateSpacing" min="0" max="4" step="0.1" value="0.8" oninput="updateCalib()">
+              <span class="val" id="valDateSpacing" style="width:34px; font-size:10.5px;">0.8mm</span>
+            </div>
+            <div class="calib-row">
+              <span style="width:70px;">Box Width:</span>
+              <input type="range" id="calDateBoxWidth" min="3" max="8" step="0.1" value="4.8" oninput="updateCalib()">
+              <span class="val" id="valDateBoxWidth" style="width:34px; font-size:10.5px;">4.8mm</span>
+            </div>
+            <div class="calib-row">
+              <span style="width:70px;">Font Size:</span>
+              <input type="range" id="calDateFontSize" min="10" max="22" step="0.5" value="13.5" oninput="updateCalib()">
+              <span class="val" id="valDateFontSize" style="width:34px; font-size:10.5px;">13.5px</span>
+            </div>
+          </div>
+
+          <!-- Crossing Position -->
+          <div class="calib-group">
+            <div class="calib-header"><span>Crossing Alignment</span><span id="valCross">4, 6</span></div>
+            <div class="calib-row">
+              <span style="width:58px;">Top:</span>
+              <input type="range" id="calCrossTop" min="0" max="60" step="0.5" value="4" oninput="updateCalib()">
+            </div>
+            <div class="calib-row">
+              <span style="width:58px;">Left:</span>
+              <input type="range" id="calCrossLeft" min="0" max="120" step="0.5" value="6" oninput="updateCalib()">
+            </div>
+            <div class="calib-row">
+              <span style="width:58px;">Width:</span>
+              <input type="range" id="calCrossWidth" min="20" max="90" step="1" value="45" oninput="updateCalib()">
+              <span class="val" id="valCrossWidth" style="width:34px; font-size:10.5px;">45mm</span>
+            </div>
+          </div>
+
+          <!-- Payee Alignment -->
+          <div class="calib-group">
+            <div class="calib-header"><span>Payee Name</span><span id="valPayee">19, 22</span></div>
+            <div class="calib-row">
+              <span style="width:28px;">Top:</span>
+              <input type="range" id="calPayeeTop" min="10" max="40" step="0.5" value="19" oninput="updateCalib()">
+            </div>
+            <div class="calib-row">
+              <span style="width:28px;">Left:</span>
+              <input type="range" id="calPayeeLeft" min="10" max="60" step="0.5" value="22" oninput="updateCalib()">
+            </div>
+          </div>
+
+          <!-- Words Alignment -->
+          <div class="calib-group">
+            <div class="calib-header"><span>Amount in Words</span><span id="valWords">29, 22</span></div>
+            <div class="calib-row">
+              <span style="width:28px;">Top:</span>
+              <input type="range" id="calWordsTop" min="20" max="60" step="0.5" value="29" oninput="updateCalib()">
+            </div>
+            <div class="calib-row">
+              <span style="width:28px;">Left:</span>
+              <input type="range" id="calWordsLeft" min="10" max="60" step="0.5" value="22" oninput="updateCalib()">
+            </div>
+          </div>
+
+          <!-- Numeric Amount Alignment -->
+          <div class="calib-group">
+            <div class="calib-header"><span>Amount (Number)</span><span id="valAmt">35, 34</span></div>
+            <div class="calib-row">
+              <span style="width:28px;">Top:</span>
+              <input type="range" id="calAmtTop" min="20" max="60" step="0.5" value="35" oninput="updateCalib()">
+            </div>
+            <div class="calib-row">
+              <span style="width:28px;">Right:</span>
+              <input type="range" id="calAmtRight" min="10" max="80" step="0.5" value="34" oninput="updateCalib()">
+            </div>
+          </div>
+
+          <button class="btn btn-primary" style="width:100%; margin-top:8px;" onclick="saveBankProfile()">💾 Save Bank Calibration</button>
+          <button class="btn btn-secondary" style="width:100%; margin-top:6px; font-weight:600;" onclick="resetCalibration()">🔄 Reset to Bank Default</button>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- =======================================================================
+         VIEW: RECENT PAYMENTS PICKER
+         ======================================================================= -->
+    <div class="app-view" id="view-lookup">
+      <div class="cheque-control-box">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:12px;">
+          <div>
+            <h3 style="margin:0 0 6px 0;" id="lookupTitle">Select Payment from Zoho Books</h3>
+            <div style="font-size:12px; color:var(--text-muted); display:flex; align-items:center; gap:8px;">
+              <span style="font-weight:700; color:#38bdf8;">🏢 Active Organization:</span>
+              <select id="recentOrgSelect" onchange="onOrganizationChange(this.value)" style="background:#0f172a; color:#fff; border:1px solid #38bdf8; font-weight:700; border-radius:6px; padding:4px 10px; font-size:12.5px; cursor:pointer; min-width:320px;">
+                <option value="940082326" data-name="MEP Engineering &amp; Trading Company (Pvt) Ltd" selected>MEP Engineering &amp; Trading Company (Pvt) Ltd (940082326)</option>
+              </select>
+            </div>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="loadRecentPayments()">🔄 Refresh Payments</button>
+        </div>
+        <div id="paymentsListContainer">
+          <p style="color:var(--text-muted);">Click Refresh to load recent payments from your Zoho Books organization.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- =======================================================================
+         VIEW: SETTINGS
+         ======================================================================= -->
+    <div class="app-view" id="view-settings">
+      <div class="cheque-control-box" style="max-width:600px; margin:0 auto;">
+        <h3>⚙️ Zoho Books Configuration</h3>
+        <div style="margin-bottom:14px;">
+          <label style="font-size:12px; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">Active Organization</label>
+          <select id="settingsOrgSelect" onchange="onOrganizationChange(this.value)" style="width:100%; background:#0f172a; border:1px solid #334155; padding:8px 12px; color:#fff; border-radius:6px; font-weight:700;">
+            <option value="940082326" data-name="MEP Engineering &amp; Trading Company (Pvt) Ltd" selected>MEP Engineering &amp; Trading Company (Pvt) Ltd (940082326)</option>
+          </select>
+        </div>
+        <div style="margin-bottom:14px;">
+          <label style="font-size:12px; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">Organization ID</label>
+          <input type="text" id="cfgOrgId" value="940082326" style="width:100%; background:#0f172a; border:1px solid #334155; padding:8px 12px; color:#38bdf8; border-radius:6px; font-family:monospace; font-weight:700;">
+        </div>
+        <div style="margin-bottom:14px;">
+          <label style="font-size:12px; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">Zoho Client ID</label>
+          <input type="text" id="cfgClientId" value="1000.GRDR1K3KJ4DMA8DOGKE35LDFI277ZH" style="width:100%; background:#0f172a; border:1px solid #334155; padding:8px 12px; color:#fff; border-radius:6px; font-family:monospace; font-size:12px;">
+        </div>
+        <div style="margin-bottom:14px;">
+          <label style="font-size:12px; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">Permanent Zoho Refresh Token (Persisted in Browser)</label>
+          <div style="display:flex; gap:8px;">
+            <input type="text" id="cfgRefreshToken" placeholder="Auto-saved on Connect" style="flex:1; background:#0f172a; border:1px solid #334155; padding:8px 12px; color:#38bdf8; border-radius:6px; font-family:monospace; font-size:12px;">
+            <button class="btn btn-secondary btn-sm" onclick="saveManualRefreshToken()">Save</button>
+          </div>
+          <small style="color:var(--text-muted); display:block; margin-top:4px;">Saved in browser localStorage to stay permanently connected without disconnecting.</small>
+        </div>
+        <div style="margin-bottom:14px;">
+          <label style="font-size:12px; font-weight:700; color:var(--text-muted); display:block; margin-bottom:4px;">Default Company Label on Cheque</label>
+          <input type="text" id="cfgCompanyName" value="MEP Engineering & Trading Company (Pvt) Ltd" style="width:100%; background:#0f172a; border:1px solid #334155; padding:8px 12px; color:#fff; border-radius:6px; font-weight:700;">
+        </div>
+        <div style="margin-top:20px; display:flex; gap:10px;">
+          <button class="btn btn-primary" onclick="startOAuth()">Connect with Zoho Books</button>
+          <button class="btn btn-secondary" onclick="checkAuth()">🔄 Verify Connection</button>
+          <button class="btn btn-secondary" onclick="fetchZohoOrganizations()">🏢 Refresh Organizations</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // Check if opened via file:// protocol
+    if (location.protocol === 'file:') {
+      document.getElementById('fileWarnBanner').classList.add('show');
+    }
+
+    // Bank Calibration Presets
+    const BANK_PRESETS = {
+      commercial: {
+        masterTop: 0,
+        masterLeft: 111.0,
+        dateTop: 8.5,
+        dateLeft: 126.0,
+        dateSpacing: 0.8,
+        dateBoxWidth: 4.8,
+        dateFontSize: 13.5,
+        dateFormat: 'skip_20',
+        crossTop: 4.0,
+        crossLeft: 6.0,
+        crossWidth: 45.0,
+        payeeTop: 22.0,
+        payeeLeft: 25.0,
+        wordsTop: 32.0,
+        wordsLeft: 25.0,
+        amtTop: 48.0,
+        amtRight: 38.0
+      },
+      ntb: {
+        masterTop: 0,
+        masterLeft: 79.0,
+        dateTop: 5.0,
+        dateLeft: 132.0,
+        dateSpacing: 0.8,
+        dateBoxWidth: 4.8,
+        dateFontSize: 13.5,
+        dateFormat: 'skip_20',
+        crossTop: 4.0,
+        crossLeft: 6.0,
+        crossWidth: 45.0,
+        payeeTop: 20.0,
+        payeeLeft: 22.0,
+        wordsTop: 30.0,
+        wordsLeft: 22.0,
+        amtTop: 42.0,
+        amtRight: 24.0
+      },
+      sampath: {
+        masterTop: 0,
+        masterLeft: 79.0,
+        dateTop: 4.0,
+        dateLeft: 128.0,
+        dateSpacing: 0.8,
+        dateBoxWidth: 4.8,
+        dateFontSize: 13.5,
+        dateFormat: 'skip_20',
+        crossTop: 4.0,
+        crossLeft: 6.0,
+        crossWidth: 45.0,
+        payeeTop: 19.0,
+        payeeLeft: 24.0,
+        wordsTop: 29.0,
+        wordsLeft: 24.0,
+        amtTop: 44.0,
+        amtRight: 36.0
+      },
+      hnb: {
+        masterTop: 0,
+        masterLeft: 79.0,
+        dateTop: 4.5,
+        dateLeft: 126.0,
+        dateSpacing: 0.8,
+        dateBoxWidth: 4.8,
+        dateFontSize: 13.5,
+        dateFormat: 'skip_20',
+        crossTop: 4.0,
+        crossLeft: 6.0,
+        crossWidth: 45.0,
+        payeeTop: 19.0,
+        payeeLeft: 24.0,
+        wordsTop: 29.0,
+        wordsLeft: 24.0,
+        amtTop: 44.0,
+        amtRight: 34.0
+      },
+      boc: {
+        masterTop: 0,
+        masterLeft: 79.0,
+        dateTop: 5.0,
+        dateLeft: 127.0,
+        dateSpacing: 0.8,
+        dateBoxWidth: 4.8,
+        dateFontSize: 13.5,
+        dateFormat: 'skip_20',
+        crossTop: 4.0,
+        crossLeft: 6.0,
+        crossWidth: 45.0,
+        payeeTop: 21.0,
+        payeeLeft: 24.0,
+        wordsTop: 32.0,
+        wordsLeft: 24.0,
+        amtTop: 44.0,
+        amtRight: 35.0
+      },
+      seylan: {
+        masterTop: 0,
+        masterLeft: 79.0,
+        dateTop: 5.5,
+        dateLeft: 128.0,
+        dateSpacing: 0.8,
+        dateBoxWidth: 4.8,
+        dateFontSize: 13.5,
+        dateFormat: 'skip_20',
+        crossTop: 4.0,
+        crossLeft: 6.0,
+        crossWidth: 45.0,
+        payeeTop: 20.0,
+        payeeLeft: 24.0,
+        wordsTop: 30.0,
+        wordsLeft: 24.0,
+        amtTop: 44.0,
+        amtRight: 36.0
+      }
+    };
+
+    let currentRecord = {
+      payeeName: 'N.G.L Hashan',
+      dateDigits: { d1: '3', d2: '0', m1: '1', m2: '0', y1: '2', y2: '0', y3: '2', y4: '6' },
+      date: '2026-10-30',
+      amount: 135000.00,
+      amountFormatted: '135,000.00',
+      amountInWords: 'One Hundred And Thirty Five Thousand And Cents Zero Only',
+      paymentNumber: '1001'
+    };
+
+    function toast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2600);
+    }
+
+    function switchView(viewName) {
+      document.querySelectorAll('.app-view').forEach(v => v.classList.remove('active'));
+      document.querySelectorAll('.nav-tabs button').forEach(b => b.classList.remove('active'));
+      const targetView = document.getElementById('view-' + viewName);
+      if (targetView) targetView.classList.add('active');
+      const targetBtn = document.querySelector(`.nav-tabs button[onclick*="${viewName}"]`);
+      if (targetBtn) targetBtn.classList.add('active');
+      if (viewName === 'lookup') { loadRecentPayments(); }
+    }
+
+    function applyTextCase(text, caseType) {
+      if (!text) return '';
+      const t = String(text).trim();
+      if (caseType === 'as_is') {
+        return t;
+      } else if (caseType === 'upper') {
+        return t.toUpperCase();
+      } else if (caseType === 'title') {
+        return t.split(/\s+/).map(w => {
+          if (!w) return '';
+          if (/^([A-Za-z]\.)+[A-Za-z]?\.?$/.test(w)) {
+            return w.toUpperCase();
+          }
+          if (w.startsWith('(') && w.endsWith(')')) {
+            const inner = w.slice(1, -1);
+            return '(' + inner.charAt(0).toUpperCase() + inner.slice(1).toLowerCase() + ')';
+          }
+          if (w.includes('-')) {
+            return w.split('-').map(p => p.charAt(0).toUpperCase() + p.slice(1).toLowerCase()).join('-');
+          }
+          return w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
+        }).join(' ');
+      } else if (caseType === 'sentence') {
+        const words = t.split(/\s+/).map((w, idx) => {
+          if (!w) return '';
+          if (/^([A-Za-z]\.)+[A-Za-z]?\.?$/.test(w)) {
+            return w.toUpperCase();
+          }
+          if (idx === 0) {
+            return w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
+          }
+          return w.toLowerCase();
+        });
+        return words.join(' ');
+      }
+      return t; // as_is fallback
+    }
+
+    function numberToWords(num) {
+      const a = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
+      const b = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+
+      function inWords(n) {
+        if (n === 0) return '';
+        if (n < 20) return a[n];
+        if (n < 100) return b[Math.floor(n / 10)] + (n % 10 !== 0 ? ' ' + a[n % 10] : '');
+        if (n < 1000) return a[Math.floor(n / 100)] + ' Hundred' + (n % 100 !== 0 ? ' And ' + inWords(n % 100) : '');
+        if (n < 1000000) return inWords(Math.floor(n / 1000)) + ' Thousand' + (n % 1000 !== 0 ? ' ' + inWords(n % 1000) : '');
+        if (n < 1000000000) return inWords(Math.floor(n / 1000000)) + ' Million' + (n % 1000000 !== 0 ? ' ' + inWords(n % 1000000) : '');
+        return inWords(Math.floor(n / 1000000000)) + ' Billion' + (n % 1000000000 !== 0 ? ' ' + inWords(n % 1000000000) : '');
+      }
+
+      const val = Number(num) || 0;
+      const intPart = Math.floor(val);
+      const cents = Math.round((val - intPart) * 100);
+
+      const wordsPart = intPart === 0 ? 'Zero' : inWords(intPart);
+      const centsPart = cents === 0 ? 'Zero' : inWords(cents);
+
+      return `${wordsPart} And Cents ${centsPart} Only`;
+    }
+
+    function onAmountChange() {
+      const amt = parseFloat(document.getElementById('cqAmountInput').value) || 0;
+      currentRecord.amount = amt;
+      currentRecord.amountFormatted = amt.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      const rawWords = numberToWords(amt);
+      const wordsCase = document.getElementById('cqWordsCase')?.value || 'title';
+      currentRecord.amountInWords = applyTextCase(rawWords, wordsCase);
+      document.getElementById('cqWordsInput').value = currentRecord.amountInWords;
+      updateLiveCheque();
+    }
+
+    function onDateChange() {
+      const dateVal = document.getElementById('cqDateInput').value;
+      if (!dateVal) return;
+      const parts = dateVal.split('-');
+      currentRecord.dateDigits = {
+        d1: parts[2][0], d2: parts[2][1],
+        m1: parts[1][0], m2: parts[1][1],
+        y1: parts[0][0], y2: parts[0][1], y3: parts[0][2], y4: parts[0][3]
+      };
+      updateLiveCheque();
+    }
+
+    function toggleCounterfoil() {
+      const on = document.getElementById('chkCounterfoil').checked;
+      document.getElementById('counterfoilPaper').style.display = on ? 'flex' : 'none';
+      document.body.classList.toggle('mode-cheque-stub', on);
+      document.body.classList.toggle('mode-cheque-single', !on);
+    }
+
+    function toggleGuide() {
+      document.getElementById('chequePaper').classList.toggle('show-guide');
+    }
+
+    function updateLiveCheque() {
+      // Bold Mode Toggle
+      const isBold = document.getElementById('chkBold')?.checked;
+      const paper = document.getElementById('chequePaper');
+      if (paper) {
+        if (isBold) paper.classList.add('bold-mode');
+        else paper.classList.remove('bold-mode');
+      }
+
+      // Payee
+      const showPayee = document.getElementById('chkPayee').checked;
+      const rawPayee = document.getElementById('cqPayeeInput').value;
+      const payeeCase = document.getElementById('cqPayeeCase')?.value || 'as_is';
+      const payeeVal = applyTextCase(rawPayee, payeeCase);
+      const payeeEl = document.getElementById('cqPayee');
+      payeeEl.style.display = showPayee ? 'block' : 'none';
+      payeeEl.innerHTML = `${escapeHtml(payeeVal)}`;
+      document.getElementById('cfPayee').textContent = payeeVal;
+
+      // Date
+      const showDate = document.getElementById('chkDate').checked;
+      const d = currentRecord.dateDigits || { d1:'0', d2:'1', m1:'0', m2:'9', y1:'2', y2:'0', y3:'2', y4:'6' };
+      const dateEl = document.getElementById('cqDateBox');
+      const dFormat = document.getElementById('cqDateFormat') ? document.getElementById('cqDateFormat').value : 'skip_20';
+      dateEl.style.display = showDate ? 'flex' : 'none';
+
+      dateEl.classList.remove('skip-20', 'compact-6');
+      if (dFormat === 'skip_20') {
+        dateEl.classList.add('skip-20');
+      } else if (dFormat === 'compact_6') {
+        dateEl.classList.add('compact-6');
+      }
+
+      if (document.getElementById('d1')) {
+        document.getElementById('d1').textContent = d.d1;
+        document.getElementById('d2').textContent = d.d2;
+        document.getElementById('m1').textContent = d.m1;
+        document.getElementById('m2').textContent = d.m2;
+        document.getElementById('y1').textContent = d.y1;
+        document.getElementById('y2').textContent = d.y2;
+        document.getElementById('y3').textContent = d.y3;
+        document.getElementById('y4').textContent = d.y4;
+      }
+
+      document.getElementById('cfDate').textContent = `${d.d1}${d.d2}/${d.m1}${d.m2}/${d.y1}${d.y2}${d.y3}${d.y4}`;
+
+      // Amount (Words)
+      const showWords = document.getElementById('chkWords').checked;
+      const rawWords = document.getElementById('cqWordsInput').value;
+      const wordsCase = document.getElementById('cqWordsCase')?.value || 'title';
+      const wordsVal = applyTextCase(rawWords, wordsCase);
+      const wordsEl = document.getElementById('cqWords');
+      wordsEl.style.display = showWords ? 'block' : 'none';
+      wordsEl.innerHTML = `${escapeHtml(wordsVal)}`;
+
+      // Amount (Num)
+      const showAmt = document.getElementById('chkAmount').checked;
+      const amtVal = parseFloat(document.getElementById('cqAmountInput').value) || 0;
+      const amtFmt = amtVal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      const amtEl = document.getElementById('cqAmountNum');
+      amtEl.style.display = showAmt ? 'block' : 'none';
+      amtEl.innerHTML = `${amtFmt}`;
+      document.getElementById('cfAmt').textContent = amtFmt;
+
+      // Crossing
+      const crossingMode = document.getElementById('cqCrossingSelect').value;
+      const linesEl = document.getElementById('cqCrossingLines');
+      const linesText = document.getElementById('cqCrossingLineText');
+      const centerEl = document.getElementById('cqAcCenter');
+
+      linesEl.style.display = 'none';
+      centerEl.style.display = 'none';
+      linesEl.classList.remove('cross-horizontal', 'cross-diagonal');
+
+      if (crossingMode === 'cross_h_ac_payee') {
+        linesEl.style.display = 'flex';
+        linesEl.classList.add('cross-horizontal');
+        linesText.textContent = 'AC payee only';
+      } else if (crossingMode === 'cross_h_ac_payee_title') {
+        linesEl.style.display = 'flex';
+        linesEl.classList.add('cross-horizontal');
+        linesText.textContent = 'A/C Payee Only';
+      } else if (crossingMode === 'cross_h_ac_payee_upper') {
+        linesEl.style.display = 'flex';
+        linesEl.classList.add('cross-horizontal');
+        linesText.textContent = 'A/C PAYEE ONLY';
+      } else if (crossingMode === 'cross_h_not_negotiable') {
+        linesEl.style.display = 'flex';
+        linesEl.classList.add('cross-horizontal');
+        linesText.innerHTML = 'A/C Payee Only<br><span style="font-size:6.5px;">Not Negotiable</span>';
+      } else if (crossingMode === 'cross_h_only') {
+        linesEl.style.display = 'flex';
+        linesEl.classList.add('cross-horizontal');
+        linesText.textContent = '';
+      } else if (crossingMode === 'cross_diag_ac_payee' || crossingMode === 'cross_ac_payee') {
+        linesEl.style.display = 'flex';
+        linesEl.classList.add('cross-diagonal');
+        linesText.textContent = 'A/C PAYEE ONLY';
+      } else if (crossingMode === 'cross_diag_not_negotiable' || crossingMode === 'cross_ac_not_negotiable') {
+        linesEl.style.display = 'flex';
+        linesEl.classList.add('cross-diagonal');
+        linesText.innerHTML = 'A/C PAYEE ONLY<br><span style="font-size:6.5px;">NOT NEGOTIABLE</span>';
+      } else if (crossingMode === 'cross_diag_only' || crossingMode === 'cross_only') {
+        linesEl.style.display = 'flex';
+        linesEl.classList.add('cross-diagonal');
+        linesText.textContent = '';
+      } else if (crossingMode === 'center_ac_payee') {
+        centerEl.style.display = 'block';
+      }
+
+      // Strike Or Bearer
+      const strikeBearer = document.getElementById('chkStrikeBearer').checked;
+      document.getElementById('cqBearerStrike').style.display = strikeBearer ? 'block' : 'none';
+
+      // Company
+      const showComp = document.getElementById('chkCompany').checked;
+      const compVal = document.getElementById('cqCompanyInput').value;
+      const compEl = document.getElementById('cqCompany');
+      compEl.style.display = showComp ? 'block' : 'none';
+      compEl.textContent = compVal;
+
+      // Signatures
+      const showSigs = document.getElementById('chkSignatures').checked;
+      const sigsEl = document.getElementById('cqSignatures');
+      sigsEl.style.display = showSigs ? 'flex' : 'none';
+      const sigCount = document.getElementById('cqSigCount').value;
+      document.getElementById('sigBlock2').style.display = sigCount === '2' ? 'flex' : 'none';
+
+      // Counterfoil Doc #
+      document.getElementById('cfDocNum').textContent = currentRecord.paymentNumber || '—';
+    }
+
+    function escapeHtml(s) {
+      if (!s) return '';
+      return String(s).replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    }
+
+    let currentRotation = 0; // 0, 90, 180, 270
+
+    function setChequeRotation(deg) {
+      deg = parseInt(deg, 10);
+      if (isNaN(deg) || ![0, 90, 180, 270].includes(deg)) deg = 270;
+      currentRotation = deg;
+
+      const wrapper = document.getElementById('fullChequeWrapper');
+      const rotSelect = document.getElementById('cqRotSelect');
+      const btnLabel = document.getElementById('btnRotateLabel');
+      const badgeRot = document.getElementById('badgeRotation');
+      const guidance = document.getElementById('feedGuidanceText');
+      const styleEl = document.getElementById('printPageStyle');
+
+      if (rotSelect) rotSelect.value = String(deg);
+
+      if (wrapper) {
+        wrapper.classList.remove('rot-0', 'rot-90', 'rot-180', 'rot-270');
+        wrapper.classList.add('rot-' + deg);
+      }
+
+      document.body.classList.remove(
+        'feed-rot-0', 'feed-rot-90', 'feed-rot-180', 'feed-rot-270',
+        'feed-vert-canon', 'feed-horizontal'
+      );
+      document.body.classList.add('feed-rot-' + deg);
+
+      let shortLabel = `${deg}°`;
+      let badgeText = `${deg}°`;
+
+      if (deg === 270) {
+        shortLabel = '270° Canon Tray';
+        badgeText = '📥 270° Canon Tray (Date First)';
+        document.body.classList.add('feed-vert-canon');
+        if (styleEl) styleEl.textContent = '@page { size: portrait; margin: 0mm !important; }';
+        const curLeft = parseFloat(document.getElementById('calMasterLeft')?.value || 0);
+        if (curLeft === 0) {
+          const b = document.getElementById('bankPreset')?.value || 'commercial';
+          const pLeft = (BANK_PRESETS[b] && BANK_PRESETS[b].masterLeft) ? BANK_PRESETS[b].masterLeft : 79.0;
+          if (document.getElementById('calMasterLeft')) document.getElementById('calMasterLeft').value = pLeft;
+        }
+        if (guidance) {
+          guidance.innerHTML = '<strong>Canon Rear Tray (270°):</strong> Tray-aligned (79mm). Insert <strong>DATE EDGE FIRST</strong> into printer tray.';
+        }
+      } else if (deg === 90) {
+        shortLabel = '90° Vertical';
+        badgeText = '📥 90° Vertical (Logo First)';
+        if (styleEl) styleEl.textContent = '@page { size: portrait; margin: 0mm !important; }';
+        const curLeft = parseFloat(document.getElementById('calMasterLeft')?.value || 0);
+        if (curLeft === 0) {
+          const b = document.getElementById('bankPreset')?.value || 'commercial';
+          const pLeft = (BANK_PRESETS[b] && BANK_PRESETS[b].masterLeft) ? BANK_PRESETS[b].masterLeft : 79.0;
+          if (document.getElementById('calMasterLeft')) document.getElementById('calMasterLeft').value = pLeft;
+        }
+        if (guidance) {
+          guidance.innerHTML = '<strong>Canon Rear Tray (90°):</strong> Tray-aligned (79mm). Insert <strong>PERFORATED / LOGO EDGE FIRST</strong> into printer tray.';
+        }
+      } else if (deg === 0) {
+        shortLabel = '0° Horizontal';
+        badgeText = '📄 0° Horizontal (Wide Edge)';
+        document.body.classList.add('feed-horizontal');
+        if (styleEl) styleEl.textContent = '@page { size: landscape; margin: 0mm !important; }';
+        const curLeft = parseFloat(document.getElementById('calMasterLeft')?.value || 0);
+        if (curLeft === 60.5 || curLeft === 79.0) {
+          if (document.getElementById('calMasterLeft')) document.getElementById('calMasterLeft').value = 0;
+        }
+        if (guidance) {
+          guidance.innerHTML = '<strong>Horizontal Feed (0°):</strong> Wide edge (178mm) inserted flat horizontally.';
+        }
+      } else if (deg === 180) {
+        shortLabel = '180° Inverted';
+        badgeText = '🔄 180° Inverted';
+        document.body.classList.add('feed-horizontal');
+        if (styleEl) styleEl.textContent = '@page { size: landscape; margin: 0mm !important; }';
+        const curLeft = parseFloat(document.getElementById('calMasterLeft')?.value || 0);
+        if (curLeft === 60.5 || curLeft === 79.0) {
+          if (document.getElementById('calMasterLeft')) document.getElementById('calMasterLeft').value = 0;
+        }
+        if (guidance) {
+          guidance.innerHTML = '<strong>Inverted Horizontal (180°):</strong> Wide edge inverted.';
+        }
+      }
+
+      if (btnLabel) btnLabel.textContent = `Rotate (${shortLabel})`;
+      if (badgeRot) badgeRot.textContent = badgeText;
+
+      localStorage.setItem('pw_cheque_rotation', String(deg));
+      updateCalib();
+    }
+
+    function cycleChequeRotation() {
+      const order = [0, 270, 90, 180];
+      const idx = order.indexOf(currentRotation);
+      const nextDeg = order[(idx + 1) % order.length];
+      setChequeRotation(nextDeg);
+      toast(`Orientation set: ${nextDeg}°`);
+    }
+
+    function updateFeedMode() {
+      const savedRot = parseInt(localStorage.getItem('pw_cheque_rotation') || '0', 10);
+      setChequeRotation(savedRot);
+    }
+function nudgeMaster(dTop, dLeft) {
+      const curTop = parseFloat(document.getElementById('calMasterTop')?.value || 0);
+      const curLeft = parseFloat(document.getElementById('calMasterLeft')?.value || 0);
+      const newTop = Math.max(0, Math.round((curTop + dTop) * 10) / 10);
+      const newLeft = Math.max(0, Math.round((curLeft + dLeft) * 10) / 10);
+      setMasterOffset(newTop, newLeft);
+    }
+
+    function updateCalib() {
+      const mTop = parseFloat(document.getElementById('calMasterTop')?.value || 0);
+      const mLeft = parseFloat(document.getElementById('calMasterLeft')?.value || 0);
+
+      document.documentElement.style.setProperty('--master-top', mTop + 'mm');
+      document.documentElement.style.setProperty('--master-left', mLeft + 'mm');
+
+      if (document.getElementById('valMaster')) {
+        document.getElementById('valMaster').textContent = `Top: ${mTop}mm, Left: ${mLeft}mm`;
+      }
+      if (document.getElementById('valMasterTop')) document.getElementById('valMasterTop').textContent = mTop + 'mm';
+      if (document.getElementById('valMasterLeft')) document.getElementById('valMasterLeft').textContent = mLeft + 'mm';
+
+      const wrapper = document.getElementById('fullChequeWrapper');
+
+      if (wrapper) {
+        if (currentRotation === 0 || currentRotation === 180) {
+          wrapper.style.marginTop = mTop + 'mm';
+          wrapper.style.marginLeft = mLeft + 'mm';
+        } else {
+          wrapper.style.marginTop = mTop + 'mm';
+          wrapper.style.marginLeft = '0mm';
+        }
+      }
+
+      const dTop = document.getElementById('calDateTop').value;
+      const dLeft = document.getElementById('calDateLeft').value;
+      const dSpacing = parseFloat(document.getElementById('calDateSpacing')?.value || 0.8);
+      const dBoxWidth = parseFloat(document.getElementById('calDateBoxWidth')?.value || 4.8);
+      const dFontSize = parseFloat(document.getElementById('calDateFontSize')?.value || 13.5);
+
+      const cTop = document.getElementById('calCrossTop')?.value || 4;
+      const cLeft = document.getElementById('calCrossLeft')?.value || 6;
+      const cWidth = document.getElementById('calCrossWidth')?.value || 45;
+
+      const pTop = document.getElementById('calPayeeTop').value;
+      const pLeft = document.getElementById('calPayeeLeft').value;
+      const wTop = document.getElementById('calWordsTop').value;
+      const wLeft = document.getElementById('calWordsLeft').value;
+      const aTop = document.getElementById('calAmtTop').value;
+      const aRight = document.getElementById('calAmtRight').value;
+
+      if (document.getElementById('valDate')) document.getElementById('valDate').textContent = `${dTop}, ${dLeft}`;
+      if (document.getElementById('valDateSpacing')) document.getElementById('valDateSpacing').textContent = `${dSpacing}mm`;
+      if (document.getElementById('valDateBoxWidth')) document.getElementById('valDateBoxWidth').textContent = `${dBoxWidth}mm`;
+      if (document.getElementById('valDateFontSize')) document.getElementById('valDateFontSize').textContent = `${dFontSize}px`;
+      if (document.getElementById('valCross')) document.getElementById('valCross').textContent = `${cTop}, ${cLeft}`;
+      if (document.getElementById('valCrossWidth')) document.getElementById('valCrossWidth').textContent = `${cWidth}mm`;
+      if (document.getElementById('valPayee')) document.getElementById('valPayee').textContent = `${pTop}, ${pLeft}`;
+      if (document.getElementById('valWords')) document.getElementById('valWords').textContent = `${wTop}, ${wLeft}`;
+      if (document.getElementById('valAmt')) document.getElementById('valAmt').textContent = `${aTop}, ${aRight}`;
+
+      const dateEl = document.getElementById('cqDateBox');
+      if (dateEl) {
+        dateEl.style.top = dTop + 'mm';
+        dateEl.style.left = dLeft + 'mm';
+        dateEl.style.gap = dSpacing + 'mm';
+        dateEl.querySelectorAll('.d-cell').forEach(cell => {
+          cell.style.width = dBoxWidth + 'mm';
+          cell.style.fontSize = dFontSize + 'px';
+        });
+      }
+
+      const linesEl = document.getElementById('cqCrossingLines');
+      if (linesEl) {
+        linesEl.style.top = cTop + 'mm';
+        linesEl.style.left = cLeft + 'mm';
+        linesEl.style.width = cWidth + 'mm';
+      }
+
+      const payeeEl = document.getElementById('cqPayee');
+      payeeEl.style.top = pTop + 'mm';
+      payeeEl.style.left = pLeft + 'mm';
+
+      const wordsEl = document.getElementById('cqWords');
+      wordsEl.style.top = wTop + 'mm';
+      wordsEl.style.left = wLeft + 'mm';
+
+      const amtEl = document.getElementById('cqAmountNum');
+      amtEl.style.top = aTop + 'mm';
+      amtEl.style.right = aRight + 'mm';
+      amtEl.style.fontSize = dFontSize + 'px';
+    }
+
+    function applyBankPreset(presetKey) {
+      if (!presetKey) presetKey = 'commercial';
+      localStorage.setItem('pw_selected_bank', presetKey);
+      let p = BANK_PRESETS[presetKey] || BANK_PRESETS.commercial;
+      const saved = localStorage.getItem('pw_calib_' + presetKey);
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          // Discard stale amount top <= 38 for commercial bank
+          if (presetKey === 'commercial' && parsed.amtTop && parseFloat(parsed.amtTop) <= 45) {
+            delete parsed.amtTop;
+          }
+          if (parsed.masterLeft && (Math.abs(parseFloat(parsed.masterLeft) - 60.5) < 0.2 || (presetKey === 'commercial' && parseFloat(parsed.masterLeft) < 85))) {
+            delete parsed.masterLeft;
+          }
+          p = { ...p, ...parsed };
+        } catch (_) {}
+      }
+
+      const defMasterLeft = (currentRotation === 270 || currentRotation === 90) ? 111.0 : 0;
+      const targetMasterLeft = (p.masterLeft !== undefined && p.masterLeft !== null && p.masterLeft !== '' && p.masterLeft !== 0) 
+        ? p.masterLeft 
+        : defMasterLeft;
+
+      if (document.getElementById('calMasterTop')) document.getElementById('calMasterTop').value = (p.masterTop !== undefined) ? p.masterTop : 0;
+      if (document.getElementById('calMasterLeft')) document.getElementById('calMasterLeft').value = targetMasterLeft;
+      if (document.getElementById('calDateTop')) document.getElementById('calDateTop').value = p.dateTop;
+      if (document.getElementById('calDateLeft')) document.getElementById('calDateLeft').value = p.dateLeft;
+      if (document.getElementById('calDateSpacing')) document.getElementById('calDateSpacing').value = p.dateSpacing || 0.8;
+      if (document.getElementById('calDateBoxWidth')) document.getElementById('calDateBoxWidth').value = p.dateBoxWidth || 4.8;
+      if (document.getElementById('calDateFontSize')) document.getElementById('calDateFontSize').value = p.dateFontSize || 13.5;
+      if (document.getElementById('cqDateFormat') && p.dateFormat) document.getElementById('cqDateFormat').value = p.dateFormat;
+      if (document.getElementById('calCrossTop')) document.getElementById('calCrossTop').value = p.crossTop || 4;
+      if (document.getElementById('calCrossLeft')) document.getElementById('calCrossLeft').value = p.crossLeft || 6;
+      if (document.getElementById('calCrossWidth')) document.getElementById('calCrossWidth').value = p.crossWidth || 45;
+      if (document.getElementById('calPayeeTop')) document.getElementById('calPayeeTop').value = p.payeeTop;
+      if (document.getElementById('calPayeeLeft')) document.getElementById('calPayeeLeft').value = p.payeeLeft;
+      if (document.getElementById('calWordsTop')) document.getElementById('calWordsTop').value = p.wordsTop;
+      if (document.getElementById('calWordsLeft')) document.getElementById('calWordsLeft').value = p.wordsLeft;
+      if (document.getElementById('calAmtTop')) document.getElementById('calAmtTop').value = p.amtTop;
+      if (document.getElementById('calAmtRight')) document.getElementById('calAmtRight').value = p.amtRight;
+      updateLiveCheque();
+      updateCalib();
+    }
+
+    function resetCalibration() {
+      const b = document.getElementById('bankPreset')?.value || 'commercial';
+      localStorage.removeItem('pw_calib_' + b);
+      applyBankPreset(b);
+      toast(`Reset ${b.toUpperCase()} calibration to factory default`);
+    }
+
+    function saveBankProfile() {
+      const bank = document.getElementById('bankPreset').value;
+      const cfg = {
+        masterTop: document.getElementById('calMasterTop')?.value || 0,
+        masterLeft: document.getElementById('calMasterLeft')?.value || 0,
+        dateTop: document.getElementById('calDateTop').value,
+        dateLeft: document.getElementById('calDateLeft').value,
+        dateSpacing: document.getElementById('calDateSpacing')?.value || 0.8,
+        dateBoxWidth: document.getElementById('calDateBoxWidth')?.value || 4.8,
+        dateFontSize: document.getElementById('calDateFontSize')?.value || 13.5,
+        dateFormat: document.getElementById('cqDateFormat')?.value || 'skip_20',
+        crossTop: document.getElementById('calCrossTop')?.value || 4,
+        crossLeft: document.getElementById('calCrossLeft')?.value || 6,
+        crossWidth: document.getElementById('calCrossWidth')?.value || 45,
+        payeeTop: document.getElementById('calPayeeTop').value,
+        payeeLeft: document.getElementById('calPayeeLeft').value,
+        wordsTop: document.getElementById('calWordsTop').value,
+        wordsLeft: document.getElementById('calWordsLeft').value,
+        amtTop: document.getElementById('calAmtTop').value,
+        amtRight: document.getElementById('calAmtRight').value,
+      };
+      localStorage.setItem('pw_calib_' + bank, JSON.stringify(cfg));
+      toast('✅ Saved calibration for ' + bank);
+    }
+
+    const KNOWN_ORGANIZATIONS = [
+      { organization_id: '940082326', name: 'MEP Engineering & Trading Company (Pvt) Ltd', is_default_org: true }
+    ];
+
+    let currentOrganizations = [...KNOWN_ORGANIZATIONS];
+    let savedOrg = localStorage.getItem('selected_org_id');
+    if (!savedOrg || savedOrg === '933829154' || String(savedOrg).startsWith('935')) {
+      savedOrg = '940082326';
+      localStorage.setItem('selected_org_id', '940082326');
+      localStorage.setItem('selected_org_name', 'MEP Engineering & Trading Company (Pvt) Ltd');
+    }
+    let currentOrgId = '940082326';
+    let currentOrgName = localStorage.getItem('selected_org_name') || 'MEP Engineering & Trading Company (Pvt) Ltd';
+
+    function getOrgId() {
+      const cfg = document.getElementById('cfgOrgId')?.value?.trim();
+      if (cfg && cfg !== '933829154' && !String(cfg).startsWith('935')) return cfg;
+      return '940082326';
+    }
+
+    function populateOrgDropdowns(orgs) {
+      if (!Array.isArray(orgs) || orgs.length === 0) return;
+      currentOrganizations = orgs;
+
+      const dropdownIds = ['topOrgSelect', 'toolbarOrgSelect', 'recentOrgSelect', 'settingsOrgSelect'];
+      dropdownIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.innerHTML = orgs.map(o => {
+          const isSelected = String(o.organization_id) === String(currentOrgId);
+          const isDefault = o.is_default_org ? ' (Default)' : '';
+          return `<option value="${o.organization_id}" data-name="${escapeHtml(o.name)}" ${isSelected ? 'selected' : ''}>${escapeHtml(o.name)}${isDefault}</option>`;
+        }).join('');
+      });
+    }
+
+    function onOrganizationChange(orgId, autoLoad = true) {
+      if (!orgId) return;
+      currentOrgId = String(orgId);
+
+      const found = currentOrganizations.find(o => String(o.organization_id) === currentOrgId);
+      if (found) {
+        currentOrgName = found.name;
+      } else {
+        const opt = document.querySelector(`#topOrgSelect option[value="${currentOrgId}"]`) || document.querySelector(`#toolbarOrgSelect option[value="${currentOrgId}"]`);
+        if (opt) currentOrgName = opt.getAttribute('data-name') || opt.textContent;
+      }
+
+      localStorage.setItem('selected_org_id', currentOrgId);
+      localStorage.setItem('selected_org_name', currentOrgName);
+
+      // Sync all dropdowns
+      ['topOrgSelect', 'toolbarOrgSelect', 'recentOrgSelect', 'settingsOrgSelect'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el && el.value !== currentOrgId) el.value = currentOrgId;
+      });
+
+      if (document.getElementById('cfgOrgId')) {
+        document.getElementById('cfgOrgId').value = currentOrgId;
+      }
+      if (document.getElementById('headerBrandSub')) {
+        document.getElementById('headerBrandSub').textContent = `Auto-fill & 1-Click Print Engine (Org: ${currentOrgId})`;
+      }
+      if (document.getElementById('lookupTitle')) {
+        document.getElementById('lookupTitle').textContent = `Select Payment from ${currentOrgName} (${currentOrgId})`;
+      }
+
+      // Update Company Label on Cheque
+      const companyUpper = currentOrgName.toUpperCase();
+      if (document.getElementById('cfgCompanyName')) {
+        document.getElementById('cfgCompanyName').value = companyUpper;
+      }
+      if (document.getElementById('cqCompanyInput')) {
+        document.getElementById('cqCompanyInput').value = companyUpper;
+      }
+      const cqCompanyEl = document.getElementById('cqCompany');
+      if (cqCompanyEl) {
+        cqCompanyEl.textContent = companyUpper;
+      }
+      const cfCompanyEl = document.querySelector('.counterfoil-paper > div:last-child');
+      if (cfCompanyEl) {
+        cfCompanyEl.textContent = companyUpper;
+      }
+
+      if (autoLoad) {
+        toast(`🏢 Switched to: ${currentOrgName}`);
+        loadQuickPayments(true);
+        const lookupView = document.getElementById('view-lookup');
+        if (lookupView && lookupView.classList.contains('active')) {
+          loadRecentPayments();
+        }
+      }
+    }
+
+    async function fetchZohoOrganizations() {
+      try {
+        const rt = getSavedRefreshToken();
+        const res = await fetch(`/api/get-record?type=organizations&refresh_token=${encodeURIComponent(rt)}`, {
+          headers: { 'X-Zoho-Refresh-Token': rt }
+        });
+        const data = await res.json();
+        if (data && (data.organizations || data.data)) {
+          const orgs = data.organizations || data.data;
+          if (Array.isArray(orgs) && orgs.length > 0) {
+            populateOrgDropdowns(orgs);
+            const matched = orgs.find(o => String(o.organization_id) === String(currentOrgId));
+            if (!matched && orgs[0]) {
+              onOrganizationChange(orgs[0].organization_id, false);
+            }
+          }
+        }
+      } catch (err) {
+        console.warn('Using known organizations list:', err);
+      }
+    }
+
+    const DEFAULT_REFRESH_TOKEN = '1000.57ec42130e16850f433c0cee72156ca5.dca11e286f4157cd23e8eaf34cefd236';
+
+    function getSavedRefreshToken() {
+      const saved = (document.getElementById('cfgRefreshToken') && document.getElementById('cfgRefreshToken').value.trim()) || localStorage.getItem('zoho_refresh_token');
+      if (saved && saved.length > 20 && !saved.includes('9187')) return saved;
+      try { localStorage.setItem('zoho_refresh_token', DEFAULT_REFRESH_TOKEN); } catch(_) {}
+      return DEFAULT_REFRESH_TOKEN;
+    }
+
+    function saveManualRefreshToken() {
+      const val = document.getElementById('cfgRefreshToken').value.trim();
+      if (val) {
+        localStorage.setItem('zoho_refresh_token', val);
+        toast('✅ Saved Zoho Refresh Token permanently!');
+        checkAuth();
+        fetchZohoOrganizations();
+      }
+    }
+
+    window.addEventListener('message', (e) => {
+      if (e.data && e.data.type === 'ZOHO_AUTH_SUCCESS') {
+        const rt = (e.data.tokens && e.data.tokens.refreshToken) || e.data.refreshToken;
+        if (rt) {
+          localStorage.setItem('zoho_refresh_token', rt);
+          if (document.getElementById('cfgRefreshToken')) {
+            document.getElementById('cfgRefreshToken').value = rt;
+          }
+        }
+        toast('✅ Zoho Books Connected Permanently!');
+        checkAuth();
+        fetchZohoOrganizations();
+        loadQuickPayments(true);
+      }
+    });
+
+    // Load Quick Payments Dropdown & Auto-select
+    async function loadQuickPayments(manualTrigger = false) {
+      const sel = document.getElementById('quickPaymentSelect');
+      if (!sel) return;
+      if (manualTrigger) toast('🔄 Fetching recent Zoho payments for ' + currentOrgName + '...');
+      
+      try {
+        const rt = getSavedRefreshToken();
+        const res = await fetch(`/api/get-record?type=list&organizationID=${getOrgId()}&refresh_token=${encodeURIComponent(rt)}`, {
+          headers: { 'X-Zoho-Refresh-Token': rt }
+        });
+        const data = await res.json();
+        if (data.success && data.payments && data.payments.length > 0) {
+          sel.innerHTML = '<option value="">⚡ Select Zoho Payment (' + data.payments.length + ' available)...</option>' +
+            data.payments.map(p => {
+              const amt = Number(p.amount || 0).toLocaleString('en-LK', { minimumFractionDigits: 2 });
+              return `<option value="${p.payment_id}">${p.vendor_name || 'Vendor'} — Rs ${amt} (#${p.payment_number || p.payment_id.slice(-6)}) [${p.date}]</option>`;
+            }).join('');
+
+          // If no specific payment was loaded yet, auto-load the most recent payment
+          const params = new URLSearchParams(window.location.search);
+          const hasUrlId = params.get('paymentID') || params.get('id') || params.get('expenseID');
+          if (!hasUrlId && (!currentRecord || !currentRecord.payment_id)) {
+            selectPayment(data.payments[0].payment_id, false);
+          }
+        } else if (data.error) {
+          console.error('Zoho load error:', data.error);
+          sel.innerHTML = '<option value="">(Error connecting to Zoho — Click to Retry)</option>';
+          toast('⚠️ Zoho: ' + (typeof data.error === 'string' ? data.error : JSON.stringify(data.error)));
+        } else {
+          sel.innerHTML = '<option value="">(No payments found in ' + currentOrgName + ')</option>';
+        }
+      } catch (err) {
+        sel.innerHTML = '<option value="">(Error loading payments)</option>';
+      }
+    }
+
+    // Auto-fetch from URL Params (Zoho Books Custom Button Target)
+    async function initFromUrlParams() {
+      const params = new URLSearchParams(window.location.search);
+      const paymentId = params.get('paymentID') || params.get('id');
+      const expenseId = params.get('expenseID');
+      const urlOrgId = params.get('organizationID') || params.get('orgId');
+      if (urlOrgId) {
+        onOrganizationChange(urlOrgId, false);
+      }
+      const orgId = urlOrgId || getOrgId();
+      const type = params.get('type') || (expenseId ? 'expense' : 'vendorpayment');
+
+      const id = paymentId || expenseId;
+      if (!id) {
+        // No ID in URL -> load recent payments from Zoho
+        loadQuickPayments(false);
+        return;
+      }
+
+      toast('⚡ Auto-filling details from Zoho Books...');
+      try {
+        const rt = getSavedRefreshToken();
+        const res = await fetch(`/api/get-record?type=${type}&id=${id}&organizationID=${orgId}&refresh_token=${encodeURIComponent(rt)}`, {
+          headers: { 'X-Zoho-Refresh-Token': rt }
+        });
+        const data = await res.json();
+        if (data.success) {
+          currentRecord = data;
+
+          // Auto-fill Controls
+          document.getElementById('cqPayeeInput').value = data.payeeName || '';
+          document.getElementById('cqAmountInput').value = data.amount || 0;
+          const wordsCase = document.getElementById('cqWordsCase')?.value || 'title';
+          const autoWords = data.amountInWords || numberToWords(data.amount || 0);
+          currentRecord.amountInWords = applyTextCase(autoWords, wordsCase);
+          document.getElementById('cqWordsInput').value = currentRecord.amountInWords;
+          if (data.date) {
+            document.getElementById('cqDateInput').value = data.date;
+            onDateChange();
+          }
+
+          // Auto-detect bank if present
+          if (data.bankName) {
+            const b = data.bankName.toLowerCase();
+            if (b.includes('sampath')) document.getElementById('bankPreset').value = 'sampath';
+            else if (b.includes('commercial')) document.getElementById('bankPreset').value = 'commercial';
+            else if (b.includes('nations') || b.includes('ntb')) document.getElementById('bankPreset').value = 'ntb';
+            else if (b.includes('hatton') || b.includes('hnb')) document.getElementById('bankPreset').value = 'hnb';
+            else if (b.includes('ceylon') || b.includes('boc')) document.getElementById('bankPreset').value = 'boc';
+            else if (b.includes('seylan')) document.getElementById('bankPreset').value = 'seylan';
+            applyBankPreset(document.getElementById('bankPreset').value);
+          }
+
+          updateLiveCheque();
+          loadQuickPayments(false);
+          toast(`✅ Auto-filled: ${data.payeeName} (Rs ${data.amountFormatted})`);
+        } else {
+          toast('⚠️ ' + (data.error || 'Failed to auto-fetch record'));
+          loadQuickPayments(false);
+        }
+      } catch (err) {
+        toast('Error loading: ' + err.message);
+        loadQuickPayments(false);
+      }
+    }
+
+    async function checkAuth() {
+      const badge = document.getElementById('navAuthBadge');
+      const text = document.getElementById('navAuthText');
+      if (location.protocol === 'file:') {
+        badge.className = 'auth-badge disconnected';
+        text.textContent = 'Run via start.bat';
+        return;
+      }
+      const rt = getSavedRefreshToken();
+      if (document.getElementById('cfgRefreshToken') && rt) {
+        document.getElementById('cfgRefreshToken').value = rt;
+      }
+      try {
+        const res = await fetch(`/api/get-record?check=1&organizationID=${getOrgId()}&refresh_token=${encodeURIComponent(rt)}`, {
+          headers: { 'X-Zoho-Refresh-Token': rt }
+        });
+        const data = await res.json();
+        if (data.authorized) {
+          if (data.refreshToken) {
+            localStorage.setItem('zoho_refresh_token', data.refreshToken);
+            if (document.getElementById('cfgRefreshToken')) document.getElementById('cfgRefreshToken').value = data.refreshToken;
+          }
+          badge.className = 'auth-badge connected';
+          text.textContent = 'Zoho Connected';
+        } else {
+          badge.className = 'auth-badge disconnected';
+          text.textContent = 'Zoho Disconnected';
+        }
+      } catch (_) {
+        badge.className = 'auth-badge disconnected';
+        text.textContent = 'Offline';
+      }
+    }
+
+    function startOAuth() {
+      if (location.protocol === 'file:') {
+        alert('⚠️ Cannot connect from file:// mode.\n\nPlease double-click "start.bat" in the pw-cheque-printer folder to open http://localhost:8888, or deploy to Vercel/Netlify.');
+        return;
+      }
+      const cId = document.getElementById('cfgClientId') ? document.getElementById('cfgClientId').value.trim() : '1000.GRDR1K3KJ4DMA8DOGKE35LDFI277ZH';
+      window.open('/api/oauthStart', '_blank', 'width=650,height=600');
+    }
+
+    async function loadRecentPayments() {
+      const container = document.getElementById('paymentsListContainer');
+      container.innerHTML = '<p style="color:var(--text-muted);">Loading payments from Zoho Books...</p>';
+      try {
+        const rt = getSavedRefreshToken();
+        const res = await fetch(`/api/get-record?type=list&organizationID=${getOrgId()}&refresh_token=${encodeURIComponent(rt)}`, {
+          headers: { 'X-Zoho-Refresh-Token': rt }
+        });
+        const data = await res.json();
+        if (data.success && data.payments) {
+          container.innerHTML = `
+            <table style="width:100%; border-collapse:collapse; margin-top:12px;">
+              <thead>
+                <tr style="border-bottom:1px solid #475569; text-align:left; font-size:12px; color:var(--text-muted);">
+                  <th style="padding:8px;">Date</th>
+                  <th>Payment #</th>
+                  <th>Vendor / Payee</th>
+                  <th style="text-align:right;">Amount (LKR)</th>
+                  <th style="text-align:center;">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${data.payments.map(p => `
+                  <tr style="border-bottom:1px solid #334155; font-size:13px;">
+                    <td style="padding:10px 8px;">${p.date}</td>
+                    <td class="mono">${p.payment_number || '—'}</td>
+                    <td><strong>${p.vendor_name || '—'}</strong></td>
+                    <td class="num mono" style="text-align:right;">Rs ${Number(p.amount||0).toLocaleString('en-LK', {minimumFractionDigits:2})}</td>
+                    <td style="text-align:center;">
+                      <button class="btn btn-primary btn-sm" onclick="selectPayment('${p.payment_id}')">Auto-Fill &amp; Print</button>
+                    </td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          `;
+        } else {
+          container.innerHTML = `<p style="color:var(--red);">Error loading payments: ${data.error || 'Check Zoho connection'}</p>`;
+        }
+      } catch (err) {
+        container.innerHTML = `<p style="color:var(--red);">Error: ${err.message}</p>`;
+      }
+    }
+
+    async function selectPayment(paymentId, switchTab = true) {
+      if (switchTab) toast('Loading payment #' + paymentId + '...');
+      try {
+        const rt = getSavedRefreshToken();
+        const res = await fetch(`/api/get-record?type=vendorpayment&id=${paymentId}&organizationID=${getOrgId()}&refresh_token=${encodeURIComponent(rt)}`, {
+          headers: { 'X-Zoho-Refresh-Token': rt }
+        });
+        const data = await res.json();
+        if (data.success) {
+          currentRecord = data;
+          document.getElementById('cqPayeeInput').value = data.payeeName || '';
+          document.getElementById('cqAmountInput').value = data.amount || 0;
+          const wordsCase = document.getElementById('cqWordsCase')?.value || 'title';
+          const autoWords = numberToWords(data.amount || 0);
+          currentRecord.amountInWords = applyTextCase(autoWords, wordsCase);
+          document.getElementById('cqWordsInput').value = currentRecord.amountInWords;
+          if (data.date) {
+            document.getElementById('cqDateInput').value = data.date;
+            onDateChange();
+          }
+
+          if (data.bankName) {
+            const b = data.bankName.toLowerCase();
+            if (b.includes('sampath')) document.getElementById('bankPreset').value = 'sampath';
+            else if (b.includes('commercial')) document.getElementById('bankPreset').value = 'commercial';
+            else if (b.includes('nations') || b.includes('ntb')) document.getElementById('bankPreset').value = 'ntb';
+            else if (b.includes('hatton') || b.includes('hnb')) document.getElementById('bankPreset').value = 'hnb';
+            else if (b.includes('ceylon') || b.includes('boc')) document.getElementById('bankPreset').value = 'boc';
+            else if (b.includes('seylan')) document.getElementById('bankPreset').value = 'seylan';
+            applyBankPreset(document.getElementById('bankPreset').value);
+          }
+
+          const sel = document.getElementById('quickPaymentSelect');
+          if (sel) sel.value = paymentId;
+
+          updateLiveCheque();
+          if (switchTab) switchView('cheque');
+          toast('✅ Loaded ' + data.payeeName + ' (Rs ' + data.amountFormatted + ')');
+        }
+      } catch (err) {
+        toast('Error: ' + err.message);
+      }
+    }
+
+    // Set today date by default
+    document.getElementById('cqDateInput').value = new Date().toISOString().slice(0, 10);
+    const savedBank = localStorage.getItem('pw_selected_bank') || 'commercial';
+    if (document.getElementById('bankPreset')) document.getElementById('bankPreset').value = savedBank;
+    const savedRot = parseInt(localStorage.getItem('pw_cheque_rotation') || '270', 10);
+    setChequeRotation(savedRot);
+    applyBankPreset(savedBank);
+    onOrganizationChange(currentOrgId, false);
+    updateLiveCheque();
+    checkAuth();
+    fetchZohoOrganizations();
+    initFromUrlParams();
+  </script>
+</body>
+</html>

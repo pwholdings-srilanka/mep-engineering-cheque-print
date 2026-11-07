@@ -1,0 +1,893 @@
+/* public/cheque.css */
+/* PW Holdings Cheque Printer - Design System & Layout */
+
+@page {
+  size: portrait;
+  margin: 0mm !important;
+}
+
+:root {
+  --primary-navy: #163e50;
+  --primary-teal: #1b6575;
+  --primary-btn: #195e70;
+  --primary-btn-hover: #144e5d;
+  --accent-cyan: #38bdf8;
+  --focus-ring: #579eac;
+  --bg-page: #f1f4f6;
+  --card-bg: #ffffff;
+  --border-subtle: #dbe2e7;
+  --border-strong: #c5d0d8;
+  --text-main: #172b3a;
+  --text-muted: #697c88;
+  --text-dim: #94a3b8;
+  
+  --master-top: 0mm;
+  --master-left: 60.5mm;
+  --cheque-font: 'Arial', sans-serif;
+  --print-font-size: 13.5px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg-page);
+  color: var(--text-main);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  font-size: 13px;
+  line-height: 1.45;
+  min-height: 100vh;
+}
+
+button, select, input, textarea {
+  font: inherit;
+}
+
+button, select {
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  background: white;
+  padding: 8px 12px;
+  color: var(--text-main);
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 12.5px;
+  transition: all 0.15s ease;
+}
+
+button:hover {
+  background: #f8fafc;
+  border-color: #94a3b8;
+}
+
+button:focus-visible, select:focus-visible, input:focus-visible, summary:focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+input[type="text"], input[type="number"], input[type="date"], select {
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  padding: 8px 10px;
+  background: white;
+  color: var(--text-main);
+}
+
+/* ==========================================================================
+   Header (Matching Helans Brand Architecture)
+   ========================================================================== */
+.app-header {
+  background: #ffffff;
+  border-top: 4px solid var(--primary-teal);
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 16px 28px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.brand-mark {
+  background: var(--primary-navy);
+  color: white;
+  font-weight: 800;
+  font-size: 20px;
+  width: 44px;
+  height: 44px;
+  border-radius: 9px;
+  display: grid;
+  place-items: center;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.brand-info h1 {
+  margin: 0;
+  font-size: 19px;
+  letter-spacing: -0.3px;
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+.brand-info p {
+  margin: 2px 0 0;
+  color: var(--text-muted);
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.header-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 5px 10px;
+  border-radius: 20px;
+  background: #e6f4ea;
+  color: #137333;
+  border: 1px solid #ceead6;
+}
+
+.status-badge.rot {
+  background: #f0f9ff;
+  color: #0369a1;
+  border-color: #bae6fd;
+}
+
+.status-badge.offline {
+  background: #fef2f2;
+  color: #b91c1c;
+  border-color: #fecaca;
+}
+
+/* ==========================================================================
+   Main Layout: Split Workspace (Left: Canvas Preview, Right: Sidebar Controls)
+   ========================================================================== */
+.main-workspace {
+  max-width: 1540px;
+  margin: 0 auto;
+  padding: 24px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 390px;
+  gap: 24px;
+  align-items: start;
+}
+
+@media screen and (max-width: 1080px) {
+  .main-workspace {
+    grid-template-columns: 1fr;
+    padding: 16px 12px;
+  }
+}
+
+/* ==========================================================================
+   Left: Preview Workspace & Cheque Paper
+   ========================================================================== */
+.preview-pane {
+  min-width: 0;
+}
+
+.preview-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+  background: #ffffff;
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--border-subtle);
+}
+
+.preview-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.nudge-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.nudge-btn {
+  padding: 5px 9px;
+  font-size: 11px;
+  background: #f8fafc;
+  border: 1px solid var(--border-strong);
+  border-radius: 4px;
+  color: var(--text-main);
+  font-weight: 700;
+}
+
+.nudge-btn:hover {
+  background: #e2e8f0;
+}
+
+.canvas-viewport {
+  background: #f8fafc;
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  padding: 30px;
+  min-height: 440px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: auto;
+  position: relative;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+/* Master Offset Wrapper (Screen: Centered; Print: Rotated via @media print) */
+#fullChequeWrapper {
+  display: inline-flex;
+  margin: 0 auto;
+}
+
+/* Cheque Assembly (Single or Cheque + Stub) */
+.cheque-assembly {
+  display: flex;
+  flex-direction: row;
+  background: #fffef7; /* Bank paper soft tint */
+  border: 1px dashed #cbd5e1;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  position: relative;
+}
+
+/* Cheque Body (Standard SL Bank Size: 205mm x 90mm) */
+.cheque-body {
+  width: 205mm;
+  height: 90mm;
+  position: relative;
+  background: #ffffff;
+  overflow: hidden;
+  border-left: 1px dashed #cbd5e1;
+}
+
+/* Cheque Counterfoil / Stub (50mm x 90mm) */
+.cheque-stub {
+  width: 50mm;
+  height: 90mm;
+  padding: 6mm 4mm;
+  background: #f8fafc;
+  border-right: 1px dashed #94a3b8;
+  font-size: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+}
+
+.stub-title {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  border-bottom: 1.5px solid #0f172a;
+  padding-bottom: 2px;
+  margin-bottom: 4px;
+}
+
+.stub-field {
+  margin-bottom: 4px;
+}
+
+.stub-label {
+  font-size: 8.5px;
+  color: #64748b;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.stub-val {
+  font-weight: 700;
+  font-family: 'Space Mono', monospace;
+  border-bottom: 1px solid #cbd5e1;
+  min-height: 14px;
+}
+
+/* ==========================================================================
+   Cheque Elements (Absolute Millimeter Placements)
+   ========================================================================== */
+.cq-element {
+  position: absolute;
+  color: #000000;
+  font-family: var(--cheque-font);
+  user-select: none;
+}
+
+/* Date Box (Individual digits DD MM YYYY) */
+#cqDateBox {
+  top: 5mm;
+  left: 132mm;
+  display: flex;
+  gap: 0.8mm;
+  z-index: 10;
+}
+
+.d-cell {
+  width: 4.8mm;
+  height: 6mm;
+  border: 1px solid rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--print-font-size);
+  font-weight: 700;
+  font-family: 'Space Mono', monospace;
+}
+
+/* Date Separator spacing for [20] skip */
+#cqDateBox.skip-20 .cell-skip-20 {
+  display: none !important;
+}
+
+#cqDateBox.compact-6 .cell-year-prefix {
+  display: none !important;
+}
+
+/* Parallel Crossing Lines ("ACCOUNT PAYEE ONLY") */
+#cqCrossingLines {
+  top: 4mm;
+  left: 6mm;
+  width: 45mm;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform: rotate(-15deg);
+  z-index: 5;
+}
+
+.cross-line {
+  width: 100%;
+  height: 1.5px;
+  background: #000000;
+}
+
+.cross-text {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  margin: 1.5px 0;
+  text-transform: uppercase;
+}
+
+/* Payee Name */
+#cqPayee {
+  top: 20mm;
+  left: 22mm;
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+  max-width: 130mm;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  z-index: 10;
+}
+
+/* Amount in Words */
+#cqWords {
+  top: 30mm;
+  left: 22mm;
+  width: 145mm;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.45;
+  z-index: 10;
+}
+
+/* Amount in Numeric Figures (Rs) */
+#cqAmountNum {
+  top: 42mm;
+  right: 24mm;
+  font-size: var(--print-font-size);
+  font-weight: 800;
+  font-family: 'Space Mono', monospace;
+  letter-spacing: 0.5px;
+  z-index: 10;
+}
+
+#cqAmountNum::before {
+  content: '*** ';
+}
+
+#cqAmountNum::after {
+  content: ' /=';
+}
+
+/* Cross Bearer Strike */
+#cqBearerStrike {
+  top: 26mm;
+  left: 178mm;
+  width: 22mm;
+  height: 1.5px;
+  background: #000000;
+  z-index: 10;
+}
+
+/* Company Header */
+#cqCompanyHeader {
+  top: 2mm;
+  left: 25mm;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: #334155;
+  text-transform: uppercase;
+}
+
+/* Signatures Placeholder */
+#cqSignatures {
+  bottom: 8mm;
+  right: 20mm;
+  display: flex;
+  gap: 15mm;
+  text-align: center;
+}
+
+.sig-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.sig-line {
+  width: 32mm;
+  border-bottom: 1px dotted #000000;
+  margin-bottom: 2px;
+}
+
+.sig-label {
+  font-size: 8px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #475569;
+}
+
+/* Bold Mode */
+.bold-mode .cq-element {
+  font-weight: 900 !important;
+}
+
+.bold-mode .d-cell {
+  border-width: 1.5px !important;
+}
+
+/* Millimeter Ruler / Alignment Grid */
+.alignment-grid {
+  position: absolute;
+  inset: 0;
+  background-image: 
+    linear-gradient(to right, rgba(0, 160, 255, 0.12) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 160, 255, 0.12) 1px, transparent 1px);
+  background-size: 10mm 10mm;
+  pointer-events: none;
+  z-index: 20;
+  display: none;
+}
+
+.show-grid .alignment-grid {
+  display: block;
+}
+
+/* ==========================================================================
+   Right: Sticky Sidebar Controls
+   ========================================================================== */
+.controls-sidebar {
+  position: sticky;
+  top: 86px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.control-card {
+  background: #ffffff;
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  padding: 18px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.card-title {
+  font-size: 13.5px;
+  font-weight: 800;
+  color: var(--text-main);
+  margin: 0 0 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.action-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Big Print Button */
+.btn-print {
+  background: var(--primary-btn);
+  color: #ffffff;
+  border: 1px solid var(--primary-btn);
+  padding: 13px 20px;
+  font-size: 14.5px;
+  font-weight: 800;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  box-shadow: 0 2px 4px rgba(25, 94, 112, 0.2);
+}
+
+.btn-print:hover {
+  background: var(--primary-btn-hover);
+  color: #ffffff;
+  box-shadow: 0 4px 8px rgba(25, 94, 112, 0.3);
+}
+
+.btn-group-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.btn-secondary {
+  background: #f8fafc;
+  color: var(--text-main);
+  border: 1px solid var(--border-strong);
+  padding: 9px 12px;
+}
+
+.btn-secondary:hover {
+  background: #edf2f7;
+}
+
+/* Form Groups & Inputs */
+.form-group {
+  margin-bottom: 12px;
+}
+
+.form-group label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #475569;
+  margin-bottom: 4px;
+}
+
+.input-with-select {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.input-full {
+  width: 100%;
+}
+
+.select-case {
+  font-size: 11px;
+  padding: 5px 8px;
+  font-weight: 600;
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+/* Toggle Checkboxes Grid */
+.toggle-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 12px;
+  margin-top: 6px;
+}
+
+.toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #334155;
+  cursor: pointer;
+}
+
+/* Collapsible Settings Sections */
+details.settings-accordion {
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  margin-top: 8px;
+  background: #ffffff;
+  overflow: hidden;
+}
+
+details.settings-accordion summary {
+  padding: 10px 14px;
+  font-weight: 700;
+  font-size: 12px;
+  color: var(--text-main);
+  cursor: pointer;
+  background: #f8fafc;
+  border-bottom: 1px solid transparent;
+  user-select: none;
+}
+
+details.settings-accordion[open] summary {
+  border-bottom-color: var(--border-subtle);
+}
+
+.accordion-body {
+  padding: 14px;
+  background: #ffffff;
+}
+
+.calib-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.calib-field label {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #64748b;
+  display: block;
+  margin-bottom: 2px;
+}
+
+.calib-field input {
+  width: 100%;
+  padding: 6px 8px;
+  font-size: 11.5px;
+}
+
+/* ==========================================================================
+   Quick Payments Drawer / Modal
+   ========================================================================== */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 100;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.modal-overlay.open {
+  display: flex;
+}
+
+.modal-card {
+  background: #ffffff;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 900px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+}
+
+.modal-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #f8fafc;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+.modal-search {
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.modal-search input {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+}
+
+.modal-body {
+  padding: 0;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.payments-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.payments-table th, .payments-table td {
+  padding: 10px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.payments-table th {
+  background: #f1f5f9;
+  font-weight: 700;
+  color: #475569;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+
+.payments-table tr:hover {
+  background: #f8fafc;
+}
+
+.btn-autofill {
+  background: var(--primary-teal);
+  color: #ffffff;
+  border: none;
+  padding: 5px 12px;
+  font-size: 11.5px;
+  border-radius: 4px;
+  font-weight: 700;
+}
+
+.btn-autofill:hover {
+  background: var(--primary-navy);
+}
+
+/* ==========================================================================
+   Toast Notification
+   ========================================================================== */
+#toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: #0f172a;
+  color: #ffffff;
+  padding: 12px 20px;
+  border-radius: 8px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+  font-weight: 600;
+  font-size: 13px;
+  z-index: 200;
+  opacity: 0;
+  transform: translateY(15px);
+  transition: all 0.25s ease;
+  pointer-events: none;
+}
+
+#toast.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ==========================================================================
+   PRINT MEDIA STYLES (Accurate Millimeter Output)
+   ========================================================================== */
+@media print {
+  html, body {
+    background: #ffffff !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .app-header,
+  .controls-sidebar,
+  .preview-toolbar,
+  .alignment-grid,
+  .modal-overlay,
+  #toast {
+    display: none !important;
+  }
+
+  .main-workspace {
+    display: block !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: none !important;
+  }
+
+  .preview-pane,
+  .canvas-viewport {
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    min-height: auto !important;
+    overflow: visible !important;
+  }
+
+  /* 270 Degree Canon Rear Tray Setup */
+  body.feed-vert-canon #fullChequeWrapper {
+    transform: rotate(270deg) translate(-205mm, 0) !important;
+    transform-origin: top left !important;
+    margin-top: var(--master-top) !important;
+    margin-left: var(--master-left) !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+  }
+
+  /* 90 Degree Vertical Setup */
+  body.feed-vert-90 #fullChequeWrapper {
+    transform: rotate(90deg) translate(0, -90mm) !important;
+    transform-origin: top left !important;
+    margin-top: var(--master-top) !important;
+    margin-left: var(--master-left) !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+  }
+
+  /* 0 Degree Horizontal / Landscape */
+  body.feed-horizontal #fullChequeWrapper {
+    transform: none !important;
+    margin-top: var(--master-top) !important;
+    margin-left: var(--master-left) !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+  }
+
+  .cheque-assembly {
+    box-shadow: none !important;
+    border: none !important;
+    background: transparent !important;
+  }
+
+  .cheque-body {
+    border: none !important;
+    background: transparent !important;
+  }
+
+  .cheque-stub {
+    border: none !important;
+    background: transparent !important;
+  }
+}
+
