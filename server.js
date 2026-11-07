@@ -8,6 +8,8 @@ const routes = {
   '/api/get-record': require('./api/get-record'),
   '/api/oauthStart': require('./api/oauthStart'),
   '/api/oauthCallback': require('./api/oauthCallback'),
+  '/api/save-preset': require('./api/save-preset'),
+  '/api/get-presets': require('./api/get-presets'),
 };
 
 const staticFiles = new Set([

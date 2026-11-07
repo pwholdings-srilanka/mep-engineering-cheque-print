@@ -1027,14 +1027,14 @@
 
           <!-- Date Alignment -->
           <div class="calib-group">
-            <div class="calib-header"><span>Date Box Position &amp; Grid</span><span id="valDate">5, 132</span></div>
+            <div class="calib-header"><span>Date Box Position &amp; Grid</span><span id="valDate">26.5, 111</span></div>
             <div class="calib-row">
               <span style="width:70px;">Top:</span>
-              <input type="range" id="calDateTop" min="0" max="30" step="0.5" value="5" oninput="updateCalib()">
+              <input type="range" id="calDateTop" min="0" max="50" step="0.5" value="26.5" oninput="updateCalib()">
             </div>
             <div class="calib-row">
               <span style="width:70px;">Left:</span>
-              <input type="range" id="calDateLeft" min="80" max="170" step="0.5" value="132" oninput="updateCalib()">
+              <input type="range" id="calDateLeft" min="50" max="180" step="0.5" value="111" oninput="updateCalib()">
             </div>
             <div class="calib-row">
               <span style="width:70px;">Digit Gap:</span>
@@ -1055,10 +1055,10 @@
 
           <!-- Crossing Position -->
           <div class="calib-group">
-            <div class="calib-header"><span>Crossing Alignment</span><span id="valCross">4, 6</span></div>
+            <div class="calib-header"><span>Crossing Alignment</span><span id="valCross">19, 6</span></div>
             <div class="calib-row">
               <span style="width:58px;">Top:</span>
-              <input type="range" id="calCrossTop" min="0" max="60" step="0.5" value="4" oninput="updateCalib()">
+              <input type="range" id="calCrossTop" min="0" max="60" step="0.5" value="19" oninput="updateCalib()">
             </div>
             <div class="calib-row">
               <span style="width:58px;">Left:</span>
@@ -1073,45 +1073,50 @@
 
           <!-- Payee Alignment -->
           <div class="calib-group">
-            <div class="calib-header"><span>Payee Name</span><span id="valPayee">19, 22</span></div>
+            <div class="calib-header"><span>Payee Name</span><span id="valPayee">40, 18</span></div>
             <div class="calib-row">
               <span style="width:28px;">Top:</span>
-              <input type="range" id="calPayeeTop" min="10" max="40" step="0.5" value="19" oninput="updateCalib()">
+              <input type="range" id="calPayeeTop" min="10" max="70" step="0.5" value="40" oninput="updateCalib()">
             </div>
             <div class="calib-row">
               <span style="width:28px;">Left:</span>
-              <input type="range" id="calPayeeLeft" min="10" max="60" step="0.5" value="22" oninput="updateCalib()">
+              <input type="range" id="calPayeeLeft" min="10" max="60" step="0.5" value="18" oninput="updateCalib()">
             </div>
           </div>
 
           <!-- Words Alignment -->
           <div class="calib-group">
-            <div class="calib-header"><span>Amount in Words</span><span id="valWords">29, 22</span></div>
+            <div class="calib-header"><span>Amount in Words</span><span id="valWords">53, 17.5</span></div>
             <div class="calib-row">
               <span style="width:28px;">Top:</span>
-              <input type="range" id="calWordsTop" min="20" max="60" step="0.5" value="29" oninput="updateCalib()">
+              <input type="range" id="calWordsTop" min="20" max="80" step="0.5" value="53" oninput="updateCalib()">
             </div>
             <div class="calib-row">
               <span style="width:28px;">Left:</span>
-              <input type="range" id="calWordsLeft" min="10" max="60" step="0.5" value="22" oninput="updateCalib()">
+              <input type="range" id="calWordsLeft" min="10" max="60" step="0.5" value="17.5" oninput="updateCalib()">
             </div>
           </div>
 
           <!-- Numeric Amount Alignment -->
           <div class="calib-group">
-            <div class="calib-header"><span>Amount (Number)</span><span id="valAmt">35, 34</span></div>
+            <div class="calib-header"><span>Amount (Number)</span><span id="valAmt">57, 38</span></div>
             <div class="calib-row">
               <span style="width:28px;">Top:</span>
-              <input type="range" id="calAmtTop" min="20" max="60" step="0.5" value="35" oninput="updateCalib()">
+              <input type="range" id="calAmtTop" min="20" max="80" step="0.5" value="57" oninput="updateCalib()">
             </div>
             <div class="calib-row">
               <span style="width:28px;">Right:</span>
-              <input type="range" id="calAmtRight" min="10" max="80" step="0.5" value="34" oninput="updateCalib()">
+              <input type="range" id="calAmtRight" min="10" max="80" step="0.5" value="38" oninput="updateCalib()">
             </div>
           </div>
 
-          <button class="btn btn-primary" style="width:100%; margin-top:8px;" onclick="saveBankProfile()">💾 Save Bank Calibration</button>
-          <button class="btn btn-secondary" style="width:100%; margin-top:6px; font-weight:600;" onclick="resetCalibration()">🔄 Reset to Bank Default</button>
+          <button class="btn btn-primary" style="width:100%; margin-top:8px; font-weight:700;" onclick="saveBankProfile()">💾 Save Bank Calibration</button>
+          <div style="display:flex; gap:6px; margin-top:6px;">
+            <button class="btn btn-secondary btn-sm" style="flex:1; font-size:11px;" onclick="exportCalibration()" title="Download calibration JSON backup">📥 Backup JSON</button>
+            <button class="btn btn-secondary btn-sm" style="flex:1; font-size:11px;" onclick="importCalibrationPrompt()" title="Restore calibration from JSON file">📤 Restore</button>
+          </div>
+          <button class="btn btn-ghost btn-sm" style="width:100%; margin-top:6px; font-weight:600; color:#94a3b8;" onclick="resetCalibration()">🔄 Reset to Bank Default</button>
+          <input type="file" id="importCalibFile" accept=".json" style="display:none;" onchange="importCalibrationFile(event)">
         </div>
 
       </div>
@@ -1196,20 +1201,20 @@
       commercial: {
         masterTop: 0,
         masterLeft: 111.0,
-        dateTop: 8.5,
-        dateLeft: 126.0,
+        dateTop: 26.5,
+        dateLeft: 111.0,
         dateSpacing: 0.8,
         dateBoxWidth: 4.8,
         dateFontSize: 13.5,
         dateFormat: 'skip_20',
-        crossTop: 4.0,
+        crossTop: 19.0,
         crossLeft: 6.0,
         crossWidth: 45.0,
-        payeeTop: 22.0,
-        payeeLeft: 25.0,
-        wordsTop: 32.0,
-        wordsLeft: 25.0,
-        amtTop: 48.0,
+        payeeTop: 40.0,
+        payeeLeft: 18.0,
+        wordsTop: 53.0,
+        wordsLeft: 17.5,
+        amtTop: 57.0,
         amtRight: 38.0
       },
       ntb: {
@@ -1771,14 +1776,12 @@ function nudgeMaster(dTop, dLeft) {
       if (saved) {
         try {
           const parsed = JSON.parse(saved);
-          // Discard stale amount top <= 38 for commercial bank
-          if (presetKey === 'commercial' && parsed.amtTop && parseFloat(parsed.amtTop) <= 45) {
-            delete parsed.amtTop;
+          // Purge stale outdated calibration caches for commercial bank
+          if (presetKey === 'commercial' && (parseFloat(parsed.dateTop || 0) < 20 || parseFloat(parsed.payeeTop || 0) < 35)) {
+            localStorage.removeItem('pw_calib_commercial');
+          } else {
+            p = { ...p, ...parsed };
           }
-          if (parsed.masterLeft && (Math.abs(parseFloat(parsed.masterLeft) - 60.5) < 0.2 || (presetKey === 'commercial' && parseFloat(parsed.masterLeft) < 85))) {
-            delete parsed.masterLeft;
-          }
-          p = { ...p, ...parsed };
         } catch (_) {}
       }
 
@@ -1795,7 +1798,7 @@ function nudgeMaster(dTop, dLeft) {
       if (document.getElementById('calDateBoxWidth')) document.getElementById('calDateBoxWidth').value = p.dateBoxWidth || 4.8;
       if (document.getElementById('calDateFontSize')) document.getElementById('calDateFontSize').value = p.dateFontSize || 13.5;
       if (document.getElementById('cqDateFormat') && p.dateFormat) document.getElementById('cqDateFormat').value = p.dateFormat;
-      if (document.getElementById('calCrossTop')) document.getElementById('calCrossTop').value = p.crossTop || 4;
+      if (document.getElementById('calCrossTop')) document.getElementById('calCrossTop').value = p.crossTop || 19;
       if (document.getElementById('calCrossLeft')) document.getElementById('calCrossLeft').value = p.crossLeft || 6;
       if (document.getElementById('calCrossWidth')) document.getElementById('calCrossWidth').value = p.crossWidth || 45;
       if (document.getElementById('calPayeeTop')) document.getElementById('calPayeeTop').value = p.payeeTop;
@@ -1815,29 +1818,122 @@ function nudgeMaster(dTop, dLeft) {
       toast(`Reset ${b.toUpperCase()} calibration to factory default`);
     }
 
-    function saveBankProfile() {
-      const bank = document.getElementById('bankPreset').value;
+    async function saveBankProfile() {
+      const bank = document.getElementById('bankPreset')?.value || 'commercial';
       const cfg = {
-        masterTop: document.getElementById('calMasterTop')?.value || 0,
-        masterLeft: document.getElementById('calMasterLeft')?.value || 0,
-        dateTop: document.getElementById('calDateTop').value,
-        dateLeft: document.getElementById('calDateLeft').value,
-        dateSpacing: document.getElementById('calDateSpacing')?.value || 0.8,
-        dateBoxWidth: document.getElementById('calDateBoxWidth')?.value || 4.8,
-        dateFontSize: document.getElementById('calDateFontSize')?.value || 13.5,
+        masterTop: parseFloat(document.getElementById('calMasterTop')?.value || 0),
+        masterLeft: parseFloat(document.getElementById('calMasterLeft')?.value || 0),
+        dateTop: parseFloat(document.getElementById('calDateTop')?.value || 26.5),
+        dateLeft: parseFloat(document.getElementById('calDateLeft')?.value || 111.0),
+        dateSpacing: parseFloat(document.getElementById('calDateSpacing')?.value || 0.8),
+        dateBoxWidth: parseFloat(document.getElementById('calDateBoxWidth')?.value || 4.8),
+        dateFontSize: parseFloat(document.getElementById('calDateFontSize')?.value || 13.5),
         dateFormat: document.getElementById('cqDateFormat')?.value || 'skip_20',
-        crossTop: document.getElementById('calCrossTop')?.value || 4,
-        crossLeft: document.getElementById('calCrossLeft')?.value || 6,
-        crossWidth: document.getElementById('calCrossWidth')?.value || 45,
-        payeeTop: document.getElementById('calPayeeTop').value,
-        payeeLeft: document.getElementById('calPayeeLeft').value,
-        wordsTop: document.getElementById('calWordsTop').value,
-        wordsLeft: document.getElementById('calWordsLeft').value,
-        amtTop: document.getElementById('calAmtTop').value,
-        amtRight: document.getElementById('calAmtRight').value,
+        crossTop: parseFloat(document.getElementById('calCrossTop')?.value || 19),
+        crossLeft: parseFloat(document.getElementById('calCrossLeft')?.value || 6),
+        crossWidth: parseFloat(document.getElementById('calCrossWidth')?.value || 45),
+        payeeTop: parseFloat(document.getElementById('calPayeeTop')?.value || 40),
+        payeeLeft: parseFloat(document.getElementById('calPayeeLeft')?.value || 18),
+        wordsTop: parseFloat(document.getElementById('calWordsTop')?.value || 53),
+        wordsLeft: parseFloat(document.getElementById('calWordsLeft')?.value || 17.5),
+        amtTop: parseFloat(document.getElementById('calAmtTop')?.value || 57),
+        amtRight: parseFloat(document.getElementById('calAmtRight')?.value || 38),
       };
+
+      // 1. Save locally to browser
       localStorage.setItem('pw_calib_' + bank, JSON.stringify(cfg));
-      toast('✅ Saved calibration for ' + bank);
+      BANK_PRESETS[bank] = { ...BANK_PRESETS[bank], ...cfg };
+
+      // 2. Persist to server presets.json via API
+      try {
+        const res = await fetch('/api/save-preset', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ bank, config: cfg }),
+        });
+        if (res.ok) {
+          toast('✅ Calibration saved permanently (Browser & Server Disk)!');
+          return;
+        }
+      } catch (_) {}
+
+      toast('✅ Saved calibration for ' + bank.toUpperCase());
+    }
+
+    function exportCalibration() {
+      const b = document.getElementById('bankPreset')?.value || 'commercial';
+      const cur = {
+        bank: b,
+        calibration: {
+          masterTop: parseFloat(document.getElementById('calMasterTop')?.value || 0),
+          masterLeft: parseFloat(document.getElementById('calMasterLeft')?.value || 0),
+          dateTop: parseFloat(document.getElementById('calDateTop')?.value || 26.5),
+          dateLeft: parseFloat(document.getElementById('calDateLeft')?.value || 111.0),
+          dateSpacing: parseFloat(document.getElementById('calDateSpacing')?.value || 0.8),
+          dateBoxWidth: parseFloat(document.getElementById('calDateBoxWidth')?.value || 4.8),
+          dateFontSize: parseFloat(document.getElementById('calDateFontSize')?.value || 13.5),
+          dateFormat: document.getElementById('cqDateFormat')?.value || 'skip_20',
+          crossTop: parseFloat(document.getElementById('calCrossTop')?.value || 19),
+          crossLeft: parseFloat(document.getElementById('calCrossLeft')?.value || 6),
+          crossWidth: parseFloat(document.getElementById('calCrossWidth')?.value || 45),
+          payeeTop: parseFloat(document.getElementById('calPayeeTop')?.value || 40),
+          payeeLeft: parseFloat(document.getElementById('calPayeeLeft')?.value || 18),
+          wordsTop: parseFloat(document.getElementById('calWordsTop')?.value || 53),
+          wordsLeft: parseFloat(document.getElementById('calWordsLeft')?.value || 17.5),
+          amtTop: parseFloat(document.getElementById('calAmtTop')?.value || 57),
+          amtRight: parseFloat(document.getElementById('calAmtRight')?.value || 38),
+        },
+        exportedAt: new Date().toISOString()
+      };
+      const blob = new Blob([JSON.stringify(cur, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `cheque-calibration-${b}.json`;
+      a.click();
+      toast('📥 Downloaded calibration backup file');
+    }
+
+    function importCalibrationPrompt() {
+      document.getElementById('importCalibFile').click();
+    }
+
+    function importCalibrationFile(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        try {
+          const data = JSON.parse(e.target.result);
+          const b = data.bank || document.getElementById('bankPreset')?.value || 'commercial';
+          const cfg = data.calibration || data.savedCalibration || data.preset || data;
+          localStorage.setItem('pw_calib_' + b, JSON.stringify(cfg));
+          if (document.getElementById('bankPreset')) document.getElementById('bankPreset').value = b;
+          applyBankPreset(b);
+          await saveBankProfile();
+          toast('✅ Restored calibration successfully!');
+        } catch (err) {
+          toast('❌ Invalid JSON file: ' + err.message);
+        }
+      };
+      reader.readAsText(file);
+      event.target.value = '';
+    }
+
+    async function loadServerPresets() {
+      try {
+        const res = await fetch('/api/get-presets');
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.presets) {
+            Object.keys(data.presets).forEach(bank => {
+              if (bank.startsWith('_')) return;
+              BANK_PRESETS[bank] = { ...BANK_PRESETS[bank], ...data.presets[bank] };
+            });
+            const curBank = document.getElementById('bankPreset')?.value || 'commercial';
+            applyBankPreset(curBank);
+          }
+        }
+      } catch (_) {}
     }
 
     const KNOWN_ORGANIZATIONS = [
@@ -2232,6 +2328,7 @@ function nudgeMaster(dTop, dLeft) {
     const savedRot = parseInt(localStorage.getItem('pw_cheque_rotation') || '270', 10);
     setChequeRotation(savedRot);
     applyBankPreset(savedBank);
+    loadServerPresets();
     onOrganizationChange(currentOrgId, false);
     updateLiveCheque();
     checkAuth();

@@ -1,0 +1,22 @@
+{
+  "commercial": {
+    "masterTop": 0,
+    "masterLeft": 111,
+    "dateTop": 26.5,
+    "dateLeft": 111,
+    "dateSpacing": 0.8,
+    "dateBoxWidth": 4.8,
+    "dateFontSize": 13.5,
+    "dateFormat": "skip_20",
+    "crossTop": 19,
+    "crossLeft": 6,
+    "crossWidth": 45,
+    "payeeTop": 40,
+    "payeeLeft": 18,
+    "wordsTop": 53,
+    "wordsLeft": 17.5,
+    "amtTop": 57,
+    "amtRight": 38
+  },
+  "_lastSaved": "2026-11-07T11:12:28.798Z"
+}
