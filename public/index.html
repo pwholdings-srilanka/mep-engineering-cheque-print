@@ -1188,6 +1188,7 @@
 
   </div>
 
+
   <div class="toast" id="toast"></div>
 
   <script>
@@ -2087,18 +2088,37 @@ function nudgeMaster(dTop, dLeft) {
       }
     });
 
+    function getUrlRecordId() {
+      const p = new URLSearchParams(window.location.search);
+      return p.get('payment_id') || p.get('paymentID') || p.get('paymentId') ||
+             p.get('record_id') || p.get('recordId') || p.get('id') ||
+             p.get('bill_payment_id') || p.get('expense_id') || p.get('expenseId') || p.get('expenseID');
+    }
+
     // Load Quick Payments Dropdown & Auto-select
     async function loadQuickPayments(manualTrigger = false) {
       const sel = document.getElementById('quickPaymentSelect');
       if (!sel) return;
+      if (!checkMepSecurity()) {
+        sel.innerHTML = '<option value="">🔒 Remote access requires MEP key</option>';
+        return;
+      }
       if (manualTrigger) toast('🔄 Fetching recent Zoho payments for ' + currentOrgName + '...');
       
       try {
         const rt = getSavedRefreshToken();
         const res = await fetch(`/api/get-record?type=list&organizationID=${getOrgId()}&refresh_token=${encodeURIComponent(rt)}`, {
-          headers: { 'X-Zoho-Refresh-Token': rt }
+          headers: {
+            'X-Zoho-Refresh-Token': rt,
+            'X-Mep-Session': getSessionToken() || '',
+            'X-Mep-Key': getUrlKey() || ''
+          }
         });
         const data = await res.json();
+        if (data.requiresLogin || res.status === 401) {
+          sel.innerHTML = '<option value="">🔒 Access Restricted — Key Required</option>';
+          return;
+        }
         if (data.success && data.payments && data.payments.length > 0) {
           sel.innerHTML = '<option value="">⚡ Select Zoho Payment (' + data.payments.length + ' available)...</option>' +
             data.payments.map(p => {
@@ -2107,8 +2127,7 @@ function nudgeMaster(dTop, dLeft) {
             }).join('');
 
           // If no specific payment was loaded yet, auto-load the most recent payment
-          const params = new URLSearchParams(window.location.search);
-          const hasUrlId = params.get('paymentID') || params.get('id') || params.get('expenseID');
+          const hasUrlId = getUrlRecordId();
           if (!hasUrlId && (!currentRecord || !currentRecord.payment_id)) {
             selectPayment(data.payments[0].payment_id, false);
           }
@@ -2127,31 +2146,40 @@ function nudgeMaster(dTop, dLeft) {
     // Auto-fetch from URL Params (Zoho Books Custom Button Target)
     async function initFromUrlParams() {
       const params = new URLSearchParams(window.location.search);
-      const paymentId = params.get('paymentID') || params.get('id');
-      const expenseId = params.get('expenseID');
-      const urlOrgId = params.get('organizationID') || params.get('orgId');
+      const paymentId = params.get('payment_id') || params.get('paymentID') || params.get('paymentId') || params.get('record_id') || params.get('recordId') || params.get('id') || params.get('bill_payment_id');
+      const expenseId = params.get('expense_id') || params.get('expenseId') || params.get('expenseID');
+      const urlOrgId = params.get('organization_id') || params.get('organizationID') || params.get('orgId') || params.get('org_id');
       if (urlOrgId) {
         onOrganizationChange(urlOrgId, false);
       }
-      const orgId = urlOrgId || getOrgId();
+      const orgId = urlOrgId || getOrgId() || '940082326';
       const type = params.get('type') || (expenseId ? 'expense' : 'vendorpayment');
 
       const id = paymentId || expenseId;
       if (!id) {
-        // No ID in URL -> load recent payments from Zoho
         loadQuickPayments(false);
         return;
       }
 
-      toast('⚡ Auto-filling details from Zoho Books...');
+      toast('⚡ Loading Cheque details from MEP Engineering Zoho Books...');
       try {
         const rt = getSavedRefreshToken();
         const res = await fetch(`/api/get-record?type=${type}&id=${id}&organizationID=${orgId}&refresh_token=${encodeURIComponent(rt)}`, {
-          headers: { 'X-Zoho-Refresh-Token': rt }
+          headers: {
+            'X-Zoho-Refresh-Token': rt,
+            'X-Mep-Session': getSessionToken() || '',
+            'X-Mep-Key': getUrlKey() || ''
+          }
         });
         const data = await res.json();
+        if (data.requiresLogin || res.status === 401) {
+          toast('🔒 Access Restricted: MEP Key required for remote access');
+          loadQuickPayments(false);
+          return;
+        }
         if (data.success) {
           currentRecord = data;
+          switchView('cheque');
 
           // Auto-fill Controls
           document.getElementById('cqPayeeInput').value = data.payeeName || '';
@@ -2179,7 +2207,7 @@ function nudgeMaster(dTop, dLeft) {
 
           updateLiveCheque();
           loadQuickPayments(false);
-          toast(`✅ Auto-filled: ${data.payeeName} (Rs ${data.amountFormatted})`);
+          toast(`✅ Loaded Cheque: ${data.payeeName} (Rs ${data.amountFormatted})`);
         } else {
           toast('⚠️ ' + (data.error || 'Failed to auto-fetch record'));
           loadQuickPayments(false);
@@ -2188,6 +2216,47 @@ function nudgeMaster(dTop, dLeft) {
         toast('Error loading: ' + err.message);
         loadQuickPayments(false);
       }
+    }
+
+    function isLocalHost() {
+      const h = window.location.hostname;
+      return h === 'localhost' || h === '127.0.0.1' || h === '::1' || !h;
+    }
+
+    function getSessionToken() {
+      const p = new URLSearchParams(window.location.search);
+      const urlToken = p.get('session_token') || p.get('session');
+      if (urlToken) {
+        sessionStorage.setItem('mep_session_token', urlToken);
+        p.delete('session_token');
+        p.delete('session');
+        const newSearch = p.toString() ? '?' + p.toString() : window.location.pathname;
+        window.history.replaceState({}, document.title, newSearch);
+        return urlToken;
+      }
+      return sessionStorage.getItem('mep_session_token') || '';
+    }
+
+    function getUrlKey() {
+      const p = new URLSearchParams(window.location.search);
+      const k = p.get('key');
+      if (k) {
+        localStorage.setItem('mep_app_key', k);
+        return k;
+      }
+      return localStorage.getItem('mep_app_key') || '';
+    }
+
+    function checkMepSecurity() {
+      // Local execution on laptop is always 100% permitted
+      if (isLocalHost()) return true;
+      // Remote access requires key or session token
+      return !!(getSessionToken() || getUrlKey());
+    }
+
+    function startZohoSsoAuth() {
+      const returnUrl = window.location.pathname + window.location.search;
+      window.location.href = '/api/oauthStart?returnTo=' + encodeURIComponent(returnUrl);
     }
 
     async function checkAuth() {
@@ -2235,13 +2304,25 @@ function nudgeMaster(dTop, dLeft) {
 
     async function loadRecentPayments() {
       const container = document.getElementById('paymentsListContainer');
+      if (!checkMepSecurity()) {
+        container.innerHTML = '<p style="color:var(--text-muted);">🔒 Remote access requires MEP authorization key.</p>';
+        return;
+      }
       container.innerHTML = '<p style="color:var(--text-muted);">Loading payments from Zoho Books...</p>';
       try {
         const rt = getSavedRefreshToken();
         const res = await fetch(`/api/get-record?type=list&organizationID=${getOrgId()}&refresh_token=${encodeURIComponent(rt)}`, {
-          headers: { 'X-Zoho-Refresh-Token': rt }
+          headers: {
+            'X-Zoho-Refresh-Token': rt,
+            'X-Mep-Session': getSessionToken() || '',
+            'X-Mep-Key': getUrlKey() || ''
+          }
         });
         const data = await res.json();
+        if (data.requiresLogin || res.status === 401) {
+          container.innerHTML = '<p style="color:var(--red);">🔒 Access Restricted — Key Required</p>';
+          return;
+        }
         if (data.success && data.payments) {
           container.innerHTML = `
             <table style="width:100%; border-collapse:collapse; margin-top:12px;">
@@ -2282,9 +2363,17 @@ function nudgeMaster(dTop, dLeft) {
       try {
         const rt = getSavedRefreshToken();
         const res = await fetch(`/api/get-record?type=vendorpayment&id=${paymentId}&organizationID=${getOrgId()}&refresh_token=${encodeURIComponent(rt)}`, {
-          headers: { 'X-Zoho-Refresh-Token': rt }
+          headers: {
+            'X-Zoho-Refresh-Token': rt,
+            'X-Mep-Session': getSessionToken() || '',
+            'X-Mep-Key': getUrlKey() || ''
+          }
         });
         const data = await res.json();
+        if (data.requiresLogin || res.status === 401) {
+          toast('🔒 Access Restricted: MEP Key required');
+          return;
+        }
         if (data.success) {
           currentRecord = data;
           document.getElementById('cqPayeeInput').value = data.payeeName || '';

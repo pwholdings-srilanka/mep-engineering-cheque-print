@@ -1,12 +1,12 @@
 // api/get-record.js
 // Fetches records, vendor payments, expenses, or recent payments list from Zoho Books
-const { apiRequest, getStoredTokens, getAccessToken, ORG_ID } = require('../lib/zohoAuth');
+const { apiRequest, getStoredTokens, getAccessToken, ORG_ID, createSession, isValidSession, validateAppKey } = require('../lib/zohoAuth');
 const { numberToWords, formatDateDigits, formatAmount } = require('../lib/words');
 const url = require('url');
 
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Zoho-Refresh-Token');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Zoho-Refresh-Token, X-Mep-Session, X-Mep-Key, X-Mep-Pin');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
 
   if (req.method === 'OPTIONS') {
@@ -17,6 +17,38 @@ module.exports = async function handler(req, res) {
 
   const query = req.query || url.parse(req.url, true).query || {};
   const customRefreshToken = req.headers['x-zoho-refresh-token'] || query.refresh_token;
+  const sessionToken = req.headers['x-mep-session'] || query.session_token || query.session;
+  const key = req.headers['x-mep-key'] || query.key;
+
+  const host = req.headers['x-forwarded-host'] || req.headers.host || '';
+  const xForwardedFor = req.headers['x-forwarded-for'];
+  const remoteIp = req.socket?.remoteAddress || req.connection?.remoteAddress || '';
+  const referer = req.headers['referer'] || '';
+  
+  // Direct local requests from the user's laptop are always authorized
+  const isLocal = !xForwardedFor && (host.includes('localhost') || host.includes('127.0.0.1') || host.includes(':8888'));
+
+  // Session validation endpoint
+  if (query.type === 'check_session' || query.check_session === 'true') {
+    const valid = isLocal || isValidSession(sessionToken) || validateAppKey(key);
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ valid, isLocal, orgId: ORG_ID }));
+    return;
+  }
+
+  // Key login endpoint (exchanges button key for session token)
+  if (query.type === 'key_login' || (query.key && query.type === 'session_init')) {
+    if (validateAppKey(query.key)) {
+      const token = createSession(ORG_ID);
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ success: true, sessionToken: token, orgId: ORG_ID }));
+      return;
+    } else {
+      res.writeHead(403, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ success: false, error: 'Invalid MEP Security Key' }));
+      return;
+    }
+  }
 
   // Authorization check route
   if (query.check === '1' || query.check === 'true' || query.check_auth === 'true' || query.type === 'auth_status') {
@@ -36,14 +68,33 @@ module.exports = async function handler(req, res) {
       authorized,
       error,
       orgId: ORG_ID,
+      orgName: 'MEP Engineering & Trading Company (Pvt) Ltd',
       refreshToken: tokens ? tokens.refresh_token : null,
     }));
     return;
   }
 
-  const type = query.type || 'vendorpayment';
-  const id = query.id || query.paymentID || query.expenseID;
-  let orgId = query.organizationID || query.orgId || ORG_ID;
+  // Security gate:
+  // 1. Local requests are always permitted
+  // 2. Active session tokens are permitted
+  // 3. Valid MEP security keys are permitted
+  // 4. Requests referred directly from Zoho Books with a specific payment ID are permitted
+  const isFromZoho = referer.includes('books.zoho.com') || referer.includes('zoho.com');
+  const isAuthorized = isLocal || isValidSession(sessionToken) || validateAppKey(key) || (isFromZoho && !!(query.payment_id || query.id || query.record_id));
+  if (!isAuthorized) {
+    res.writeHead(401, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({
+      success: false,
+      error: 'UNAUTHORIZED',
+      requiresLogin: true,
+      message: 'Access Denied: MEP Engineering authorization key required for remote access.'
+    }));
+    return;
+  }
+
+  const type = query.type || (query.expense_id || query.expenseId || query.expenseID ? 'expense' : 'vendorpayment');
+  const id = query.id || query.payment_id || query.paymentID || query.paymentId || query.record_id || query.recordId || query.expense_id || query.expenseId || query.expenseID || query.bill_payment_id;
+  let orgId = query.organization_id || query.organizationID || query.orgId || query.org_id || ORG_ID;
   if (!orgId || orgId === '933829154' || String(orgId).startsWith('935')) {
     orgId = ORG_ID;
   }

@@ -23,6 +23,8 @@ module.exports = async function handler(req, res) {
     return;
   }
 
+  const state = query.state || query.returnTo || '/';
+
   const authUrl =
     `${ACCOUNTS_URL}/oauth/v2/auth?` +
     `scope=ZohoBooks.fullaccess.all&` +
@@ -30,7 +32,8 @@ module.exports = async function handler(req, res) {
     `response_type=code&` +
     `redirect_uri=${encodeURIComponent(redirectUri)}&` +
     `access_type=offline&` +
-    `prompt=consent`;
+    `prompt=consent&` +
+    `state=${encodeURIComponent(state)}`;
 
   res.writeHead(302, { Location: authUrl });
   res.end();
