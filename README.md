@@ -44,20 +44,3 @@ A modern, high-precision cheque and voucher printing system built specifically f
 
 ---
 
-## 🚀 Quick Start
-
-1. Install Node.js (v20+ recommended).
-2. Configure credentials in `.env`:
-   ```env
-   ZOHO_CLIENT_ID=1000.GRDR1K3KJ4DMA8DOGKE35LDFI277ZH
-   ZOHO_CLIENT_SECRET=your_client_secret
-   ZOHO_ORG_ID=940082326
-   ZOHO_REFRESH_TOKEN=your_refresh_token
-   PORT=8888
-   ```
-3. Run the application:
-   ```bash
-   npm start
-   # or double-click start.bat
-   ```
-4. Open [http://localhost:8888](http://localhost:8888) in Google Chrome.
