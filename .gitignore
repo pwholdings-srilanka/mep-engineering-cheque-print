@@ -3,3 +3,8 @@ node_modules/
 tokens.json
 .DS_Store
 Thumbs.db
+*.log
+stderr.log
+tmp/
+app.js
+
