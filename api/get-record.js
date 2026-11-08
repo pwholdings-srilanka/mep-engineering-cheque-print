@@ -92,8 +92,19 @@ module.exports = async function handler(req, res) {
     return;
   }
 
-  const type = query.type || (query.expense_id || query.expenseId || query.expenseID ? 'expense' : 'vendorpayment');
-  const id = query.id || query.payment_id || query.paymentID || query.paymentId || query.record_id || query.recordId || query.expense_id || query.expenseId || query.expenseID || query.bill_payment_id;
+  let type = query.type;
+  if (!type) {
+    if (query.purchaseorder_id || query.purchaseorderID || query.po_id || query.poId) type = 'purchaseorder';
+    else if (query.bill_id || query.billId || query.billID) type = 'bill';
+    else if (query.expense_id || query.expenseId || query.expenseID) type = 'expense';
+    else type = 'vendorpayment';
+  }
+
+  const id = query.id || query.payment_id || query.paymentID || query.paymentId ||
+             query.record_id || query.recordId || query.bill_payment_id ||
+             query.purchaseorder_id || query.purchaseorderID || query.po_id || query.poId ||
+             query.bill_id || query.billId || query.billID ||
+             query.expense_id || query.expenseId || query.expenseID;
   let orgId = query.organization_id || query.organizationID || query.orgId || query.org_id || ORG_ID;
   if (!orgId || orgId === '933829154' || String(orgId).startsWith('935')) {
     orgId = ORG_ID;
@@ -157,6 +168,9 @@ module.exports = async function handler(req, res) {
       const amountInWords = numberToWords(amount);
       const amountFormatted = formatAmount(amount);
 
+      const poNum = query.po_number || query.purchaseorder_number || query.po;
+      const refNum = poNum ? `${p.reference_number || ''} (PO: ${poNum})`.trim() : (p.reference_number || '');
+
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({
         success: true,
@@ -172,8 +186,74 @@ module.exports = async function handler(req, res) {
         bankName: printBank,
         accountName: p.paid_through_account_name,
         currencySymbol: p.currency_symbol || 'Rs',
-        referenceNumber: p.reference_number || '',
+        referenceNumber: refNum,
         description: p.description || '',
+      }));
+      return;
+    }
+
+    // Purchase Order
+    if (type === 'purchaseorder' || type === 'po') {
+      const apiRes = await apiRequest('GET', `/purchaseorders/${id}`, null, orgId, customRefreshToken);
+      if (apiRes.status >= 400) {
+        throw new Error(JSON.stringify(apiRes.data));
+      }
+      const po = (apiRes.data && apiRes.data.purchaseorder) || {};
+      const payeeName = po.vendor_name || '—';
+      const amount = Number(po.total) || 0;
+      const dateDigits = formatDateDigits(po.date);
+      const amountInWords = numberToWords(amount);
+      const amountFormatted = formatAmount(amount);
+
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({
+        success: true,
+        type: 'purchaseorder',
+        poId: po.purchaseorder_id,
+        poNumber: po.purchaseorder_number,
+        date: po.date,
+        dateDigits,
+        payeeName,
+        amount,
+        amountFormatted,
+        amountInWords,
+        bankName: 'Commercial Bank',
+        currencySymbol: po.currency_symbol || 'Rs',
+        referenceNumber: po.purchaseorder_number || po.reference_number || '',
+        description: `PO #${po.purchaseorder_number || ''}`,
+      }));
+      return;
+    }
+
+    // Bill
+    if (type === 'bill') {
+      const apiRes = await apiRequest('GET', `/bills/${id}`, null, orgId, customRefreshToken);
+      if (apiRes.status >= 400) {
+        throw new Error(JSON.stringify(apiRes.data));
+      }
+      const b = (apiRes.data && apiRes.data.bill) || {};
+      const payeeName = b.vendor_name || '—';
+      const amount = Number(b.total) || 0;
+      const dateDigits = formatDateDigits(b.date);
+      const amountInWords = numberToWords(amount);
+      const amountFormatted = formatAmount(amount);
+
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({
+        success: true,
+        type: 'bill',
+        billId: b.bill_id,
+        billNumber: b.bill_number,
+        date: b.date,
+        dateDigits,
+        payeeName,
+        amount,
+        amountFormatted,
+        amountInWords,
+        bankName: 'Commercial Bank',
+        currencySymbol: b.currency_symbol || 'Rs',
+        referenceNumber: b.bill_number || b.reference_number || '',
+        description: `Bill #${b.bill_number || ''}`,
       }));
       return;
     }

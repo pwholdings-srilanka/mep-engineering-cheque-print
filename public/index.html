@@ -2101,7 +2101,8 @@ function nudgeMaster(dTop, dLeft) {
       const p = new URLSearchParams(window.location.search);
       return p.get('payment_id') || p.get('paymentID') || p.get('paymentId') ||
              p.get('record_id') || p.get('recordId') || p.get('id') ||
-             p.get('bill_payment_id') || p.get('expense_id') || p.get('expenseId') || p.get('expenseID');
+             p.get('bill_payment_id') || p.get('purchaseorder_id') || p.get('po_id') ||
+             p.get('bill_id') || p.get('expense_id') || p.get('expenseId') || p.get('expenseID');
     }
 
     function onQuickPaymentSelect(val) {
@@ -2192,15 +2193,25 @@ function nudgeMaster(dTop, dLeft) {
     async function initFromUrlParams() {
       const params = new URLSearchParams(window.location.search);
       const paymentId = params.get('payment_id') || params.get('paymentID') || params.get('paymentId') || params.get('record_id') || params.get('recordId') || params.get('id') || params.get('bill_payment_id');
+      const poId = params.get('purchaseorder_id') || params.get('purchaseorderID') || params.get('po_id') || params.get('poId');
+      const billId = params.get('bill_id') || params.get('billId') || params.get('billID');
       const expenseId = params.get('expense_id') || params.get('expenseId') || params.get('expenseID');
+      const poNum = params.get('po_number') || params.get('purchaseorder_number') || params.get('po');
       const urlOrgId = params.get('organization_id') || params.get('organizationID') || params.get('orgId') || params.get('org_id');
       if (urlOrgId) {
         onOrganizationChange(urlOrgId, false);
       }
       const orgId = urlOrgId || getOrgId() || '940082326';
-      const type = params.get('type') || (expenseId ? 'expense' : 'vendorpayment');
+      
+      let type = params.get('type');
+      if (!type) {
+        if (poId) type = 'purchaseorder';
+        else if (billId) type = 'bill';
+        else if (expenseId) type = 'expense';
+        else type = 'vendorpayment';
+      }
 
-      const id = paymentId || expenseId;
+      const id = paymentId || poId || billId || expenseId;
       if (!id) {
         loadQuickPayments(false);
         return;
@@ -2209,7 +2220,10 @@ function nudgeMaster(dTop, dLeft) {
       toast('⚡ Loading Cheque details from MEP Engineering Zoho Books...');
       try {
         const rt = getSavedRefreshToken();
-        const res = await fetch(`/api/get-record?type=${type}&id=${id}&organizationID=${orgId}&refresh_token=${encodeURIComponent(rt)}`, {
+        let fetchUrl = `/api/get-record?type=${type}&id=${id}&organizationID=${orgId}&refresh_token=${encodeURIComponent(rt)}`;
+        if (poNum) fetchUrl += `&po_number=${encodeURIComponent(poNum)}`;
+
+        const res = await fetch(fetchUrl, {
           headers: {
             'X-Zoho-Refresh-Token': rt,
             'X-Mep-Session': getSessionToken() || '',
