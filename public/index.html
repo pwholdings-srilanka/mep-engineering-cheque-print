@@ -2064,12 +2064,20 @@ function nudgeMaster(dTop, dLeft) {
       }
     }
 
-    const DEFAULT_REFRESH_TOKEN = '1000.57ec42130e16850f433c0cee72156ca5.dca11e286f4157cd23e8eaf34cefd236';
+    const DEFAULT_REFRESH_TOKEN = '1000.0bf5f0ff7c2ce2c10e321eda6aec52bb.113c273332c4bee9f3eab9aa76ffa963';
 
     function getSavedRefreshToken() {
       const saved = (document.getElementById('cfgRefreshToken') && document.getElementById('cfgRefreshToken').value.trim()) || localStorage.getItem('zoho_refresh_token');
-      if (saved && saved.length > 20 && !saved.includes('9187')) return saved;
-      try { localStorage.setItem('zoho_refresh_token', DEFAULT_REFRESH_TOKEN); } catch(_) {}
+      // Invalidate old, revoked, or corrupted tokens
+      if (saved && saved.length > 20 && !saved.includes('9187') && !saved.includes('57cc') && !saved.includes('57ec')) {
+        return saved;
+      }
+      try { 
+        localStorage.setItem('zoho_refresh_token', DEFAULT_REFRESH_TOKEN); 
+      } catch(_) {}
+      if (document.getElementById('cfgRefreshToken')) {
+        document.getElementById('cfgRefreshToken').value = DEFAULT_REFRESH_TOKEN;
+      }
       return DEFAULT_REFRESH_TOKEN;
     }
 
@@ -2501,13 +2509,14 @@ function nudgeMaster(dTop, dLeft) {
     loadServerPresets();
     onOrganizationChange(currentOrgId, false);
     updateLiveCheque();
-    checkAuth();
-    fetchZohoOrganizations();
     const savedMepKey = localStorage.getItem('mep_app_key') || '';
     if (document.getElementById('cfgMepAppKey') && savedMepKey) {
       document.getElementById('cfgMepAppKey').value = savedMepKey;
     }
+    // Prioritize loading cheque data from Zoho Books Custom Button URL immediately
     initFromUrlParams();
+    // Non-blocking background auth badge update
+    setTimeout(() => { checkAuth(); }, 1200);
   </script>
 </body>
 </html>
